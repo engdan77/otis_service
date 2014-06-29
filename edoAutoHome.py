@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140624.363 $"
+__version__ = "$Revision: 20140628.364 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -197,6 +197,10 @@ class triggerQueueHandler(threading.Thread):
                         self.db.insert('device_attr', {'device_id': deviceId, 'attr_id': attr_id, 'data': db_data, 'updated': date})
                     # ADD ALARM HANDLER
                     if self.alarm:
+                        print "debug2 alarm.check"
+                        print deviceId
+                        print attr_id
+                        print db_data
                         self.alarm.check(deviceId, attr_id, db_data)
 
                 # If Client Mode - send event to Master
@@ -611,6 +615,8 @@ def displayStatusLcd(objLcd, *args):
 
 def checkDeviceCondition(objDB, argDevice, argAttr, argData):
     ''' Checks the conditions in database for argDevice, argAttribute '''
+    print "debug1 checkdevicecondition"
+    print argData
     if argData[0] == '=':
         argData = argData[1:]
         result = objDB.select('device_attr', {'device_id': argDevice, 'attr_id': argAttr, 'data': argData})
@@ -669,6 +675,8 @@ class alarmClass():
                     AlarmDev.buzz_on(3)
                 if AlarmDev.__class__.__name__ is "edoGmailAlarm":
                     mail_body = edoGetDateTime() + ": " + str(argData)
+                    print "debug3: trigger_when, convert to json"
+                    print AlarmDev.trigger_when
                     if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
                         print edoGetDateTime() + ": Mail Alarm Sent"
                         logObject.log("Alarm mail sent", 'INFO')
