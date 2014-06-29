@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140624.363 $"
+__version__ = "$Revision: 20140629.364 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -143,6 +143,7 @@ class triggerQueueHandler(threading.Thread):
         self.mode = mode
         self.alarm = kwargs['alarm']
         self.db = kwargs['db']
+        self.logObject = kwargs.get('loggerObject', None)
 
     def print_all(self):
         ''' Print whole content of queue '''
@@ -180,8 +181,8 @@ class triggerQueueHandler(threading.Thread):
                 elif attr_id == 3:
                     # Power Meter
                     date = edoEpochToDate(data[0][0])
-                    db_data = "Power Changed " + str(data[0][1])
-                    alert = date + ",id=" + str(deviceId) + ": " + db_data
+                    db_data = str(data[0][1])
+                    alert = date + ",id=" + str(deviceId) + ": " + "Power Changed " + db_data
 
                 # If LCD exists
                 if self.objLcd:
@@ -204,7 +205,11 @@ class triggerQueueHandler(threading.Thread):
                     master_ip = client_settings['master_ip']
                     master_port = int(client_settings['master_port'])
                     send_data = json.dumps({'deviceId': int(deviceId), 'type_id': type_id, 'attr_id': attr_id, 'data': data})
-                    triggerEvent(master_ip, master_port, send_data)
+                    result = triggerEvent(master_ip, master_port, send_data)
+                    if result == 'ok':
+                        self.logObject.log("Event sent: " + str(send_data), 'INFO')
+                    else:
+                        self.logObject.log("Error sending event: " + str(send_data) + " Exception: " + str(result), 'ERROR')
 
                 time.sleep(0.5)
 
@@ -313,13 +318,16 @@ def triggerEvent(ip, port, data):
     import json
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
     try:
+        sock.connect((ip, port))
         sock.sendall(json.dumps(data))
         response = sock.recv(1024)
         print "tiggerEvent_Received: {}".format(response)
-    finally:
+    except Exception as e:
+        return str(e)
+    else:
         sock.close()
+        return response
 
 
 def createInitialConfig(configObject):
@@ -542,6 +550,7 @@ def getEnabledCameras(configObject, logObject=None):
         camera_id = re.match(r'camera_([0-9]+)', current_section)
         if camera_id is not None:
             camera_name = configObject.get(current_section, 'name')
+            camera_enable = configObject.get(current_section, 'enable')
             camera_type = configObject.get(current_section, 'type')
             camera_ftp_server = configObject.get(current_section, 'ftp_server')
             camera_ftp_port = configObject.get(current_section, 'ftp_port')
@@ -550,7 +559,8 @@ def getEnabledCameras(configObject, logObject=None):
             camera_ftp_dir = configObject.get(current_section, 'ftp_dir')
 
             # Add camera to the list
-            cameras.append(edoCamera(camera_type, camera_name, camera_ftp_server, camera_ftp_port, camera_ftp_user, camera_ftp_pass, camera_ftp_dir, logObject))
+            if camera_enable == 'true':
+                cameras.append(edoCamera(camera_type, camera_name, camera_ftp_server, camera_ftp_port, camera_ftp_user, camera_ftp_pass, camera_ftp_dir, logObject))
     return cameras
 
 
