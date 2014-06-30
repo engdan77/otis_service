@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140630.382 $"
+__version__ = "$Revision: 20140630.383 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -172,6 +172,7 @@ class triggerQueueHandler(threading.Thread):
         self.mode = mode
         self.alarm = kwargs['alarm']
         self.db = kwargs['db']
+        self.sensorList = kwargs.get('sensors', None)
         self.logObject = kwargs.get('loggerObject', None)
 
     def print_all(self):
@@ -187,6 +188,15 @@ class triggerQueueHandler(threading.Thread):
         while self.running:
             if not self.queue.empty():
                 trigger = self.queue.get()
+
+                # Check if "reset_all_sensors" are recieved
+                if trigger == "reset_all_sensors":
+                    for sensor in self.sensorList:
+                        if hasattr(sensor, 'reset'):
+                            self.logObject.log("Resetting Sensor: " + str(sensor), 'INFO')
+                            sensor.reset()
+                    continue
+
                 # If data comes as json
                 if str(type(trigger)) == "<type 'unicode'>":
                     trigger = json.loads(trigger)

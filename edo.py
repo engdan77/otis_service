@@ -3,7 +3,7 @@
 edo.py - This Module is for the most used classes and methods - daniel@engvalls.eu
 '''
 
-__version__ = "$Revision: 20140622.1041 $"
+__version__ = "$Revision: 20140630.1043 $"
 
 import sys
 import threading
@@ -1204,6 +1204,12 @@ class edoPowerMeter(edoMCPvalue):
 
     def stop(self):
         self.running = False
+
+    def reset(self):
+        ''' Reset current status to force update to Queue '''
+        self.avg_val = 0
+        self.max_val = 0
+        self.count = 0
 
     def get(self, past_seconds=0):
         ''' Get the power changes within the past seconds '''
