@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140629.365 $"
+__version__ = "$Revision: 20140630.382 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -56,6 +56,35 @@ def list_device(db_ip, db_user, db_pass, db_name, logObject):
             oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
             result = oDB.select('device', "id > 0")
             print(result)
+
+
+def add_attribute(db_ip, db_user, db_pass, db_name, attr_id, attr_name, logObject):
+        ''' Add attribute to database  '''
+        from edo import edoTestSocket, edoClassDB
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            oDB.insert('attribute', {'attr_id': attr_id, 'name': attr_name})
+
+
+def list_attribute(db_ip, db_user, db_pass, db_name, logObject):
+        ''' List attributes in database  '''
+        from edo import edoTestSocket, edoClassDB
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            result = oDB.select('attribute', "id > 0")
+            print(result)
+
+
+def get_attr_name(attr_id, objDB):
+        ''' List attribute name from database  '''
+        result = objDB.select('attribute', "attr_id = " + str(attr_id))
+        return result[0][2]
+
+
+def get_dev_name(dev_id, objDB):
+        ''' List device name from database  '''
+        result = objDB.select('device', "device_id = " + str(dev_id))
+        return "%s/%s" % (result[0][2], result[0][3])
 
 
 class edoThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
@@ -198,10 +227,6 @@ class triggerQueueHandler(threading.Thread):
                         self.db.insert('device_attr', {'device_id': deviceId, 'attr_id': attr_id, 'data': db_data, 'updated': date})
                     # ADD ALARM HANDLER
                     if self.alarm:
-                        print "debug2 alarm.check"
-                        print deviceId
-                        print attr_id
-                        print db_data
                         self.alarm.check(deviceId, attr_id, db_data)
 
                 # If Client Mode - send event to Master
@@ -522,6 +547,7 @@ class edoCamera():
         self.status = None
 
     def upload_all(self, remove=False):
+        import thread
         while self.status is not None:
             time.sleep(1)
         self.objFTP.status = "transfer"
@@ -529,13 +555,20 @@ class edoCamera():
         if remove is True:
             while self.objFTP.status is not None:
                 time.sleep(1)
-            self.remove_all()
+            # Add delay to removal by thread
+            thread.start_new_thread(self.remove_all, ())
+            # self.remove_all()
 
     def remove_all(self):
         import os
-        for current_file in self.cam_shots:
-            os.remove(current_file)
+        import time
+
+        filelist = self.cam_shots
         self.cam_shots = []
+        time.sleep(300)
+        # Clear list of files to prevent same pic being mailed again, delay del
+        for current_file in filelist:
+            os.remove(current_file)
 
     def list_all(self):
         return self.cam_shots
@@ -592,7 +625,7 @@ def uploadAllCameras(cameraList):
     ''' Upload and remove all files from camers '''
     for camera in cameraList:
         # Enable or disable delete of files
-        camera.upload_all(False)
+        camera.upload_all(True)
 
 
 def getSensorStatus(objDB):
@@ -625,8 +658,6 @@ def displayStatusLcd(objLcd, *args):
 
 def checkDeviceCondition(objDB, argDevice, argAttr, argData):
     ''' Checks the conditions in database for argDevice, argAttribute '''
-    print "debug1 checkdevicecondition"
-    print argData
     if argData[0] == '=':
         argData = argData[1:]
         result = objDB.select('device_attr', {'device_id': argDevice, 'attr_id': argAttr, 'data': argData})
@@ -685,15 +716,15 @@ class alarmClass():
                     AlarmDev.buzz_on(3)
                 if AlarmDev.__class__.__name__ is "edoGmailAlarm":
                     mail_body = edoGetDateTime() + ": " + str(argData)
-                    print "debug3: trigger_when, convert to json"
-                    print AlarmDev.trigger_when
                     if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
-                        print edoGetDateTime() + ": Mail Alarm Sent"
-                        logObject.log("Alarm mail sent", 'INFO')
+                        dev_name = get_dev_name(argDev, self.objDB)
+                        attr_name = get_attr_name(argAttr, self.objDB)
+                        print edoGetDateTime() + ": Mail Alarm Sent, " + dev_name + ", " + attr_name
+                        logObject.log("Alarm mail sent, " + dev_name + ", " + attr_name, 'INFO')
                         # Trigger and get images from all cameras
                         cam_shots = triggerAllCameras(cameras)
                         # Send email
-                        AlarmDev.trigger(AlarmDev.mail_to, "HomeAlarm " + str(argData), mail_body, cam_shots)
+                        AlarmDev.trigger(AlarmDev.mail_to, "HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData), mail_body, cam_shots)
                         # Upload pictrues to FTP
                         uploadAllCameras(cameras)
                     # Feed event and have mail sent if true
@@ -711,6 +742,8 @@ if __name__ == "__main__":
     parser.add_argument("--createdb", help="Create initial database", action="store_true")
     parser.add_argument("--list_device", help="List devices in database", action="store_true")
     parser.add_argument("--add_device", help="Add device to database", action="store_true")
+    parser.add_argument("--list_attribute", help="List attributes in database", action="store_true")
+    parser.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -765,6 +798,23 @@ if __name__ == "__main__":
                     server_settings['db_user'],
                     server_settings['db_pass'],
                     server_settings['db_name'], logObject)
+
+    if args.add_attribute:
+        # Add attribute to the database
+        attr_id = raw_input("Enter id: ")
+        attr_name = raw_input("Enter Name of attribute: ")
+        add_attribute(server_settings['db_ip'],
+                      server_settings['db_user'],
+                      server_settings['db_pass'],
+                      server_settings['db_name'],
+                      attr_id, attr_name, logObject)
+
+    if args.list_attribute:
+        # List devices in database
+        list_attribute(server_settings['db_ip'],
+                       server_settings['db_user'],
+                       server_settings['db_pass'],
+                       server_settings['db_name'], logObject)
 
     if args.start:
         # Get list of cameras
