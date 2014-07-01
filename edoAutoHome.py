@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140630.382 $"
+__version__ = "$Revision: 20140701.398 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -99,7 +99,7 @@ class edoThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             pass
         else:
             self.server.queue.put(data)
-            print("Recieved: " + str(data))
+            print(edoGetDateTime() + ": Recieved - " + str(data))
 
         response = "ok"
         self.request.sendall(response)
@@ -172,6 +172,7 @@ class triggerQueueHandler(threading.Thread):
         self.mode = mode
         self.alarm = kwargs['alarm']
         self.db = kwargs['db']
+        self.sensorList = kwargs.get('sensors', None)
         self.logObject = kwargs.get('loggerObject', None)
 
     def print_all(self):
@@ -187,6 +188,15 @@ class triggerQueueHandler(threading.Thread):
         while self.running:
             if not self.queue.empty():
                 trigger = self.queue.get()
+
+                # Check if "reset_all_sensors" are recieved
+                if trigger == "reset_all_sensors":
+                    for sensor in self.sensorList:
+                        if hasattr(sensor, 'reset'):
+                            self.logObject.log("Resetting Sensor: " + str(sensor), 'INFO')
+                            sensor.reset()
+                    continue
+
                 # If data comes as json
                 if str(type(trigger)) == "<type 'unicode'>":
                     trigger = json.loads(trigger)
@@ -351,7 +361,7 @@ def triggerEvent(ip, port, data):
         sock.connect((ip, port))
         sock.sendall(json.dumps(data))
         response = sock.recv(1024)
-        print "tiggerEvent_Received: {}".format(response)
+        print edoGetDateTime() + ": tiriggerEvent_Received: {}".format(response)
     except Exception as e:
         return str(e)
     else:
@@ -671,6 +681,20 @@ def checkDeviceCondition(objDB, argDevice, argAttr, argData):
         return False
 
 
+def send_reset_all_clients():
+    ''' Function to send reset_all to all clients '''
+    print "debug1"
+    print alarm_settings
+    print alarm_settings.get('clients_ip', None)
+    print type(alarm_settings.get('clients_ip', None))
+    import json
+    ips = json.loads(alarm_settings.get('clients_ip', None))
+    print edoGetDateTime() + ": Send Reset Sensors - " + str(ips)
+    if len(ips) > 0:
+        for ip, port in ips:
+            triggerEvent(str(ip), int(port), 'reset_all_sensors')
+
+
 class alarmClass():
     ''' Class that handles alarm notifications '''
 
@@ -699,6 +723,10 @@ class alarmClass():
             if self.objLed:
                 logObject.log("Start Led blink", 'DEBUG')
                 self.objLed.blink()
+            # Send reset to all clients sensors to get alarm if currently
+            # active
+                send_reset_all_clients()
+
         elif all(result) is False and self.active is True:
             print edoGetDateTime() + ": Alarm disarmed"
             logObject.log("Alarm disarmed", 'INFO')
@@ -709,11 +737,14 @@ class alarmClass():
 
         if self.active is True:
             # Trigger alarm when active
+            import time
             for AlarmDev in AlarmDevList:
                 if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer', 'enable') == 'true':
                     print edoGetDateTime() + ": BUZZ !!"
                     logObject.log("BUZZ !!", 'DEBUG')
-                    AlarmDev.buzz_on(3)
+                    AlarmDev.buzz_on(0.5)
+                    time.sleep(0.2)
+                    AlarmDev.buzz_on(0.5)
                 if AlarmDev.__class__.__name__ is "edoGmailAlarm":
                     mail_body = edoGetDateTime() + ": " + str(argData)
                     if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
