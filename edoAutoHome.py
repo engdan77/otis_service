@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140701.396 $"
+__version__ = "$Revision: 20140701.398 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -723,7 +723,8 @@ class alarmClass():
             if self.objLed:
                 logObject.log("Start Led blink", 'DEBUG')
                 self.objLed.blink()
-            # Send reset to all clients sensors
+            # Send reset to all clients sensors to get alarm if currently
+            # active
                 send_reset_all_clients()
 
         elif all(result) is False and self.active is True:
@@ -736,11 +737,14 @@ class alarmClass():
 
         if self.active is True:
             # Trigger alarm when active
+            import time
             for AlarmDev in AlarmDevList:
                 if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer', 'enable') == 'true':
                     print edoGetDateTime() + ": BUZZ !!"
                     logObject.log("BUZZ !!", 'DEBUG')
-                    AlarmDev.buzz_on(3)
+                    AlarmDev.buzz_on(0.5)
+                    time.sleep(0.2)
+                    AlarmDev.buzz_on(0.5)
                 if AlarmDev.__class__.__name__ is "edoGmailAlarm":
                     mail_body = edoGetDateTime() + ": " + str(argData)
                     if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
