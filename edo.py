@@ -3,7 +3,7 @@
 edo.py - This Module is for the most used classes and methods - daniel@engvalls.eu
 '''
 
-__version__ = "$Revision: 20140630.1043 $"
+__version__ = "$Revision: 20140810.1051 $"
 
 import sys
 import threading
@@ -1149,6 +1149,7 @@ class edoPowerMeter(edoMCPvalue):
         self.avg_val = 0
         self.max_val = 0
         self.count = 0
+        self.verify_times = 3
 
     def run(self):
         import time
@@ -1193,7 +1194,12 @@ class edoPowerMeter(edoMCPvalue):
             '''
             # For Max
             current_power = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[1]
-            if changed(self.max_val, current_power, self.limit):
+
+            # Returns a list of True/False based on verify_times used to
+            # determine false switch
+            verified = [changed(self.max_val, self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[1], self.limit) for i in range(1, self.verify_times)]
+
+            if changed(self.max_val, current_power, self.limit) and all(verified):
                 self.max_val = current_power
                 if self.objLog:
                     self.objLog.log('edoPowerMeter: ' + str(self.max_val), 'INFO')

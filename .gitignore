@@ -13,3 +13,4 @@ edoCarGps.py
 old/
 tmp/
 *.tmp
+*.orig
