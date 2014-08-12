@@ -52,19 +52,19 @@ I've been working on this project on my spare time for a few months and thought 
 I will likely spend more time on this documentation but this is in short what have been developed
 *Hardware*
 * Main Board (the device that acts as master to the networked devices)
-..* Raspberry Pi
-..* Nokia LCD - that display when there are activity
-..* Button - when pressed will display current status of the sensors
-..* PIR-senosrs - detects motions
-..* Magnetic Switch - connect to door and register if open/closed
+* Raspberry Pi
+ * Nokia LCD - that display when there are activity
+ * Button - when pressed will display current status of the sensors
+ * PIR-senosrs - detects motions
+ * Magnetic Switch - connect to door and register if open/closed
 
 **Too sleepy to add more this time..**
 
 *Software*
-* Master/Client setup
-* Communicates with remote devices (RPI's) with their sensors
-* Clients sends events to Master
-* Master stores data to MySQL
+  * Master/Client setup
+  * Communicates with remote devices (RPI's) with their sensors
+  * Clients sends events to Master
+  * Master stores data to MySQL
 
 
 -------------------------
