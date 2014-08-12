@@ -75,5 +75,5 @@ Pictures
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/IMG_1_MainBoard.jpg)
 
 *Scematic over the Main Board*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/IMG_1_MainBoard.jpg)
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/IMG_2_Schematic_Main_Board.jpg)
 
