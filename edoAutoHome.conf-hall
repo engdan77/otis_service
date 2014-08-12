@@ -1,8 +1,8 @@
 [server]
 db_user = edoAutoHome
 db_name = edoAutoHome
-db_pass = ***REMOVED***
-db_ip = 192.168.200.130
+db_pass = xxx
+db_ip = 192.168.200.1
 
 [client]
 deviceid = 1
@@ -33,21 +33,21 @@ pin = 27
 [alarm_gmail]
 enable = true
 trigger_when = [{"dev": 1, "attr": 1, "data": "=Motion"}]
-gmail_user = daniel.engvall.mail
-gmail_pass = FEDCBAAAAA
-from = daniel.engvall.mail@gmail.com
-to = daniel@engvalls.eu
+gmail_user = xxx
+gmail_pass = xxx
+from = xxx@gmail.com
+to = xxx@xxx
 cameras = camera_hall
 
 [camera_1]
 name = hall
 enable = true
 type = pi
-ftp_server = 192.168.200.130
-ftp_port = 30021
-ftp_user = edoautohome
-ftp_pass = edoautohome
-ftp_dir = edoautohome/camera
+ftp_server = 192.168.200.1
+ftp_port = xxx
+ftp_user = xxx
+ftp_pass = xxx
+ftp_dir = xxx/camera
 
 [trigger_tellstickswitch]
 enable = false

@@ -9,7 +9,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140701.398 $"
+__version__ = "$Revision: 20140812.398 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
