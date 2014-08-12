@@ -50,6 +50,7 @@ History
 **2014-08-12**
 I've been working on this project on my spare time for a few months and thought I would share this to github in case others would be interessted of the work or contribute with ideas.
 I will likely spend more time on this documentation but this is in short what have been developed
+
 *Hardware*
 * Main Board (the device that acts as master to the networked devices)
 * Raspberry Pi
