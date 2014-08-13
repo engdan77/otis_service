@@ -52,20 +52,23 @@ I've been working on this project on my spare time for a few months and thought 
 I will likely spend more time on this documentation but this is in short what have been developed
 
 *Hardware*
-* Main Board (the device that acts as master to the networked devices)
-* Raspberry Pi
+* Main Board *[Device 1]* (the device that acts as master to the networked devices)
+ * Raspberry Pi
  * Nokia LCD - that display when there are activity
  * Button - when pressed will display current status of the sensors
  * PIR-senosrs - detects motions
  * Magnetic Switch - connect to door and register if open/closed
 
-**Too sleepy to add more this time..**
+* Kitchen Board *[Device 2]*
+ * Raspberry Pi
+ * Non-Intrusive Current Meter - used to determine whether stove is turned on when leaving home
 
 *Software*
   * Master/Client setup
   * Communicates with remote devices (RPI's) with their sensors
   * Clients sends events to Master
   * Master stores data to MySQL
+
 
 -------------------------
 Keywords
@@ -79,13 +82,23 @@ larm-mode: This is when main board will be monitoring for any threasholds breach
 Currently Support Sensors and Units
 -------------------------
 
-* PIR-sensor [Attribute 1]  - http://www.kjell.com/sortiment/el/elektronik/mikrokontroller/arduino/rorelsedetektor-p87892
-* Magnetic Switch [Attribute 2]
-* Nokia LCD (currently used on Main Board to display status-changes)
-* Buzzer (currently used to notify when larm is activated, or sensors trigger it)
+* PIR-sensor *[Attribute 1]*  - http://www.kjell.com/sortiment/el/elektronik/mikrokontroller/arduino/rorelsedetektor-p87892
+* Magnetic Switch *[Attribute 2]* - http://www.kjell.com/sortiment/hus-halsa-fritid/larm-sakerhet-overvakning/larm/detektorer-sensorer-brytare/magnetkontakt-nc-med-ledning-p50501
+* Nokia LCD (currently used on Main Board to display status-changes) - https://learn.adafruit.com/nokia-5110-3310-monochrome-lcd
+* Buzzer (currently used to notify when larm is activated, or sensors trigger it) - http://www.kjell.com/sortiment/el/elektronik/mikrokontroller/arduino/aktiv-buzzer-for-arduino-p87881
 * Led (this is show when larm-mode is enabled by blinking)
-* Non-Intrusive Current Meter [Attribute 3] (currently monitoring if stove is left on when leaving house)
-* RaspberryPI-camera
+* Non-Intrusive Current Meter *[Attribute 3]* (currently monitoring if stove is left on when leaving house) - https://www.sparkfun.com/products/11005
+* RaspberryPI-camera - http://www.raspberrypi.org/product/camera-module/
+
+-------------------------
+Planned Support Sensors and Units
+-------------------------
+
+* Foscam Wifi Webcam - http://foscam.us/foscam-fi8918w-wireless-ip-camera-11.html
+* TellStick Duo - http://www.telldus.se/products/tellstick_duo
+* TellStick Temperature Sensors - http://www.clasohlson.com/se/Ekstra-temperaturgiver-hygrometer/Pr365123000
+* 2G/3G Dongle - to support SMS
+
 
 -------------------------
 Configuration Example
