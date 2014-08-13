@@ -74,9 +74,9 @@ I will likely spend more time on this documentation but this is in short what ha
 Keywords
 -------------------------
 
-device: Represents the device that you run the software on
-attribute: This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
-larm-mode: This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
+**device** Represents the device that you run the software on
+**attribute** This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
+**larm-mode** This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
 
 -------------------------
 Currently Support Sensors and Units
@@ -218,7 +218,10 @@ Example of Output
 Data Model
 -------------------------
 
-Document to be supplied soon
+*Database Model*
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_4_database_model.jpg)
+
+*More document to be supplied soon*
 
 
 -------------------------
