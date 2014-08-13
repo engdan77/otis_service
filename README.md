@@ -191,7 +191,7 @@ mode: could either be "server" or "client"
 -------------------------
 Trigger/Activate Definition
 -------------------------
-Example:
+Example: 
 	activate = [{"dev": 1, "attr": 2, "data": "=Door Close"}]
 
 dev: This is device-number registered
