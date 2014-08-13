@@ -219,7 +219,7 @@ Data Model
 -------------------------
 
 *Database Model*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_4_database_model.jpg)
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_4_database_model.png)
 
 *More document to be supplied soon*
 
