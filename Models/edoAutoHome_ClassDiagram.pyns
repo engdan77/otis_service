@@ -1,0 +1,72 @@
+# PynSource Version 1.1
+{'type':'meta', 'info1':'Lorem ipsum dolor sit amet, consectetur adipiscing elit is latin.'}
+{'type':'umlshape', 'id':'edoClassConfig', 'x':626, 'y':362, 'width':128, 'height':176, 'attrs':'configfile|oLogger|config|oConfigFile', 'meths':'__init__|AddUpdate|getAll|get|sections'}
+{'type':'umlshape', 'id':'edoThreadedTCPServer', 'x':1206, 'y':463, 'width':178, 'height':85, 'attrs':'queue', 'meths':'__init__'}
+{'type':'umlshape', 'id':'edoCamera', 'x':649, 'y':15, 'width':112, 'height':280, 'attrs':'camera_type|camera_name|camera_ftp_server|camera_ftp_port|camera_ftp_user|camera_ftp_pass|camera_ftp_dir|cam_shots|loggerObject|objFTP|status', 'meths':'__init__|trigger|upload_all|remove_all|list_all|stop'}
+{'type':'umlshape', 'id':'edoBuzzer', 'x':2197, 'y':506, 'width':86, 'height':228, 'attrs':'objLog|running|status|buzz_type|kwargs|pin|check_int', 'meths':'__init__|run|buzz_on|buzz_off|buzz_sos|stop'}
+{'type':'umlshape', 'id':'edoClassDB', 'x':1348, 'y':36, 'width':94, 'height':228, 'attrs':'dbtype|dbconnect|oLogger', 'meths':'__init__|create|createTable|createColumn|insert|update|select|sql|delete|sync'}
+{'type':'umlshape', 'id':'edoClassFileLogger', 'x':1670, 'y':802, 'width':161, 'height':176, 'attrs':'logfile|maxsize|count|oLogger|defaultlevel|oFormatter|oHandler', 'meths':'__init__|log'}
+{'type':'umlshape', 'id':'edoPirMotion', 'x':1235, 'y':962, 'width':111, 'height':202, 'attrs':'objLog|queue|running|motion|pin|check_int|all_motions', 'meths':'__init__|run|stop|get'}
+{'type':'umlshape', 'id':'sensorCheck', 'x':1539, 'y':55, 'width':102, 'height':150, 'attrs':'queue|sensorList|deviceId|running', 'meths':'__init__|run|stop'}
+{'type':'umlshape', 'id':'edoButton', 'x':2087, 'y':243, 'width':86, 'height':215, 'attrs':'objLog|running|status|timeout|count|timer|functions|pin|check_int', 'meths':'__init__|run|stop'}
+{'type':'umlshape', 'id':'edoClassSyslogLogger', 'x':2021, 'y':1368, 'width':178, 'height':124, 'attrs':'oLogger|oHandler|oFormatter', 'meths':'__init__|log'}
+{'type':'umlshape', 'id':'edoMCPvalue', 'x':1399, 'y':1508, 'width':102, 'height':254, 'attrs':'minref|adc_in|clockpin|mosipin|misopin|cspin|check_int|sleep_int|loggerObject|objLog|queue|running|status', 'meths':'__init__|poll_value'}
+{'type':'umlshape', 'id':'alarmClass', 'x':645, 'y':961, 'width':100, 'height':189, 'attrs':'objConfig|objDB|AlarmDevList|objLed|active|activate|alarm_settings|buzzer_settings', 'meths':'__init__|check'}
+{'type':'umlshape', 'id':'triggerListener', 'x':942, 'y':620, 'width':136, 'height':150, 'attrs':'queue|host|server|server_thread', 'meths':'__init__|start|stop'}
+{'type':'umlshape', 'id':'edoThreadedTCPRequestHandler', 'x':553, 'y':1494, 'width':245, 'height':62, 'attrs':'', 'meths':'handle'}
+{'type':'umlshape', 'id':'edoLcd', 'x':1258, 'y':646, 'width':94, 'height':228, 'attrs':'counter|objLog|queue|default|running|sleep_time', 'meths':'__init__|text|run|change_default|blink|blank|stop'}
+{'type':'umlshape', 'id':'sensorMotion', 'x':1730, 'y':52, 'width':111, 'height':137, 'attrs':'detected|running', 'meths':'__init__|run|stop|get'}
+{'type':'umlshape', 'id':'edoSwitch', 'x':1322, 'y':1214, 'width':86, 'height':202, 'attrs':'objLog|queue|running|status|pin|check_int|all_status', 'meths':'__init__|run|stop|get'}
+{'type':'umlshape', 'id':'triggerQueueHandler', 'x':2005, 'y':743, 'width':170, 'height':215, 'attrs':'queue|objLcd|mode|alarm|db|sensorList|logObject|running', 'meths':'__init__|print_all|run|stop'}
+{'type':'umlshape', 'id':'edoFTP', 'x':849, 'y':9, 'width':82, 'height':293, 'attrs':'queue|objLog|running|server|user|ftpPass|loggerObject|status|port|ftp', 'meths':'__init__|chdir|check_dir|run|upload|download|dir|stop'}
+{'type':'umlshape', 'id':'edoLed', 'x':1880, 'y':15, 'width':70, 'height':280, 'attrs':'objLog|running|status|blink_type|kwargs|on|off|pin|check_int|off_time|on_time', 'meths':'__init__|run|blink|led_on|led_off|stop'}
+{'type':'umlshape', 'id':'edoGmailAlarm', 'x':2241, 'y':47, 'width':119, 'height':137, 'attrs':'trigger_when|mail_to|mail_from', 'meths':'__init__|trigger|stop'}
+{'type':'umlshape', 'id':'edoGmail', 'x':2092, 'y':21, 'width':77, 'height':189, 'attrs':'objLog|running|user|password|mail_from|server|port', 'meths':'__init__|send|worker'}
+{'type':'umlshape', 'id':'edoPowerMeter', 'x':866, 'y':1445, 'width':119, 'height':371, 'attrs':'minref|adc_in|clockpin|mosipin|misopin|cspin|check_int|sleep_int|objLog|limit|debug|queue|running|avg_val|max_val|count|verify_times|all_status', 'meths':'__init__|run|changed|stop|reset|get'}
+{'type':'umlshape', 'id':'SocketServer.ThreadingMixIn', 'x':987, 'y':356, 'width':237, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'SocketServer.TCPServer', 'x':923, 'y':476, 'width':195, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'threading.Thread', 'x':1633, 'y':491, 'width':144, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'SocketServer.BaseRequestHandler', 'x':540, 'y':1286, 'width':270, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'ConfigParser.RawConfigParser', 'x':573, 'y':686, 'width':245, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'logging.getLogger', 'x':1664, 'y':1416, 'width':153, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'logging.Formatter', 'x':2034, 'y':1061, 'width':153, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'logging.handlers.RotatingFileHandler', 'x':1774, 'y':1231, 'width':312, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'Queue.Queue', 'x':829, 'y':1166, 'width':102, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'SysLogHandler', 'x':2181, 'y':1221, 'width':119, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'json.loads', 'x':648, 'y':811, 'width':94, 'height':29, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'ftplib.FTP', 'x':1038, 'y':21, 'width':94, 'height':29, 'attrs':'', 'meths':''}
+{'type':'edge', 'id':'edoThreadedTCPServer_to_SocketServer.ThreadingMixIn', 'source':'edoThreadedTCPServer', 'target':'SocketServer.ThreadingMixIn', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoThreadedTCPServer_to_SocketServer.TCPServer', 'source':'edoThreadedTCPServer', 'target':'SocketServer.TCPServer', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoBuzzer_to_threading.Thread', 'source':'edoBuzzer', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoPirMotion_to_threading.Thread', 'source':'edoPirMotion', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'sensorCheck_to_threading.Thread', 'source':'sensorCheck', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoButton_to_threading.Thread', 'source':'edoButton', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoMCPvalue_to_threading.Thread', 'source':'edoMCPvalue', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoThreadedTCPRequestHandler_to_SocketServer.BaseRequestHandler', 'source':'edoThreadedTCPRequestHandler', 'target':'SocketServer.BaseRequestHandler', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoLcd_to_threading.Thread', 'source':'edoLcd', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'sensorMotion_to_threading.Thread', 'source':'sensorMotion', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoSwitch_to_threading.Thread', 'source':'edoSwitch', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'triggerQueueHandler_to_threading.Thread', 'source':'triggerQueueHandler', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoFTP_to_threading.Thread', 'source':'edoFTP', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoLed_to_threading.Thread', 'source':'edoLed', 'target':'threading.Thread', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoGmailAlarm_to_edoGmail', 'source':'edoGmailAlarm', 'target':'edoGmail', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'edoPowerMeter_to_edoMCPvalue', 'source':'edoPowerMeter', 'target':'edoMCPvalue', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'ConfigParser.RawConfigParser_to_edoClassConfig', 'source':'ConfigParser.RawConfigParser', 'target':'edoClassConfig', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'edoFTP_to_edoCamera', 'source':'edoFTP', 'target':'edoCamera', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'logging.getLogger_to_edoClassFileLogger', 'source':'logging.getLogger', 'target':'edoClassFileLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'logging.Formatter_to_edoClassFileLogger', 'source':'logging.Formatter', 'target':'edoClassFileLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'logging.handlers.RotatingFileHandler_to_edoClassFileLogger', 'source':'logging.handlers.RotatingFileHandler', 'target':'edoClassFileLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoPirMotion', 'source':'Queue.Queue', 'target':'edoPirMotion', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'logging.getLogger_to_edoClassSyslogLogger', 'source':'logging.getLogger', 'target':'edoClassSyslogLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'SysLogHandler_to_edoClassSyslogLogger', 'source':'SysLogHandler', 'target':'edoClassSyslogLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'logging.Formatter_to_edoClassSyslogLogger', 'source':'logging.Formatter', 'target':'edoClassSyslogLogger', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoMCPvalue', 'source':'Queue.Queue', 'target':'edoMCPvalue', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'json.loads_to_alarmClass', 'source':'json.loads', 'target':'alarmClass', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_triggerListener', 'source':'Queue.Queue', 'target':'triggerListener', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'edoThreadedTCPServer_to_triggerListener', 'source':'edoThreadedTCPServer', 'target':'triggerListener', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'threading.Thread_to_triggerListener', 'source':'threading.Thread', 'target':'triggerListener', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoLcd', 'source':'Queue.Queue', 'target':'edoLcd', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoSwitch', 'source':'Queue.Queue', 'target':'edoSwitch', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoFTP', 'source':'Queue.Queue', 'target':'edoFTP', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'ftplib.FTP_to_edoFTP', 'source':'ftplib.FTP', 'target':'edoFTP', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'Queue.Queue_to_edoPowerMeter', 'source':'Queue.Queue', 'target':'edoPowerMeter', 'uml_edge_type':'composition'}
