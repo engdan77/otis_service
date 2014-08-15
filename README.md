@@ -221,7 +221,10 @@ Data Model
 *Database Model*
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_4_database_model.png)
 
-*More document to be supplied soon*
+*Class Diagram [Version: 20140809.398]*
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_5_ClassDiagram.jpg)
+
+*ToDo: Sequence Diagram*
 
 
 -------------------------
@@ -231,8 +234,8 @@ Pictures
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_1_MainBoard.jpg)
 
 *Scematic over the Main Board [Device 1]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_2_Schematic_Main_Board.jpg)
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_2_Schematic_Main_Board.jpg =640x480)
 
 *Scematic over the Kitchen Board [Device 2]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_3_Schematic_Kitchen.jpg)
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_3_Schematic_Kitchen.jpg =640x480)
 
