@@ -5,7 +5,7 @@ participant config as "configObject:edoClassConfig"
 database db as "objDB:edoClassDB"
 participant sensors as "sensors:getEnabledSensors"
 participant devList as "AlarmDevList:getEnabledAlarms"
-participant alarm as "objAlarm:alarmClass"
+' participant alarm as "objAlarm:alarmClass"
 participant sensors as "getEnabledSensors"
 participant queue as "triggerQueue:Queue"
 participant startLoop as "startLoop()"
@@ -22,22 +22,26 @@ participant ftp as "objFtp:edoFtp"
 main -> log : init()
 activate log
 log -> main : return LogObject
+deactivate log
 |||
 main -> config : init()
 activate config
 config -> main : return ConfigObject
+deactivate config
 |||
 main -> db : initi()
 activate db
 db -> main : return DbObject
+deactivate db
 |||
 main -> sensors : getEnabledSensors(configObject)
-activate devList
+activate sensors
 note right of devList
 	This object represents all
 	the sensors to be monitored
 endnote
-devList -> main : return sensorList
+sensors -> main : return sensorList
+deactivate sensors
 |||
 main -> queue : init()
 note left of queue
@@ -45,6 +49,7 @@ note left of queue
 endnote
 activate queue
 queue -> main : return queue
+deactivate queue
  == startLoop ==
 main -> startLoop : startLoop(mode, deviceId, sensors, db, alarm, LogObject)
 startLoop --> triggerListener : init(listenPort, triggerQueue)
