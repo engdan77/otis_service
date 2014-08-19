@@ -2,14 +2,14 @@
 participant main as "__main__"
 participant log as "logObject:edoClassFileLogger"
 participant config as "configObject:edoClassConfig"
-database db as "objDB:edoClassDB"
 participant sensors as "sensors:getEnabledSensors"
 participant devList as "AlarmDevList:getEnabledAlarms"
 participant alarm as "alarm:alarmClass"
+database db as "objDB:edoClassDB"
 participant sensors as "getEnabledSensors"
-participant queue as "triggerQueue:Queue" #red
 participant startLoop as "startLoop()"
 participant triggerListener as "triggerListener:triggerQueueHandler"
+participant queue as "triggerQueue:Queue" #red
 participant queueHandler as "objTriggerQueueHandler:triggerQueueHandler"
 participant sensorCheck as "objSensorCheck:sensorCheck"
 participant motion as "sensor_motionpir:edoPirMotion"
@@ -56,7 +56,7 @@ main -> queue : init():Queue::queue
 note left of queue
 	This is the queue where all events passed through
 endnote
-activate queue
+activate queue #red
 queue -> main : queue
 deactivate queue
  == startLoop ==
@@ -64,23 +64,25 @@ main -> startLoop : startLoop(mode, deviceId, sensors, db, alarm, log)
 startLoop ->> triggerListener : init(listenPort, triggerQueue):Thread::thread
 loop
 	activate triggerListener
-	activate queue
+	activate queue #red
 note left of triggerListener
 Starts server 
 and listens for
 incoming events
 end note
-	triggerListener -> triggerListener : handle()
 	activate triggerListener
+	activate alarm #red
 	triggerListener -->> queue : queue.put()
-	deactivate triggerListener
+	alarm --> triggerListener : <<Match criteria with current status in DB>>
+	triggerListener --> alarm : retur
 	deactivate triggerListener
 	deactivate queue
+	deactivate alarm
 end
 startLoop ->> queueHandler : init(mode, triggerQueue):Thread::thread
 loop
 	activate queueHandler
-	activate queue
+	activate queue #red
 note right of queueHandler
 Thread that handles
 events in queue
