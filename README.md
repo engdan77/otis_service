@@ -224,7 +224,8 @@ Data Model
 *Class Diagram [Version: 20140809.398]*
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_5_ClassDiagram.jpg)
 
-*ToDo: Sequence Diagram*
+*Sequence Diagram [Version: 20140809.398]*
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_6_SequenceDiagram.png)
 
 
 -------------------------
