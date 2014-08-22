@@ -71,15 +71,15 @@ activate startLoop #yellow
 startLoop ->> triggerListener : init(listenPort, triggerQueue):Thread::thread
 loop
 	activate triggerListener #brown
-	activate queue #red
 note left of triggerListener
 Starts server 
 and listens for
 incoming events
 end note
-	activate alarm #green
 	triggerListener -->> queue : queue.put()
+	activate queue #red
 	alarm --> triggerListener : <<Match criteria with current status in DB>>
+	activate alarm #green
 	triggerListener --> alarm : return
 	deactivate queue
 	deactivate alarm
@@ -90,21 +90,22 @@ end
 startLoop ->> queueHandler : init(mode, triggerQueue):Thread::thread
 loop
 	activate queueHandler #brown
-	activate queue #red
 note right of queueHandler
 Thread that handles
 events in queue
 end note
 	queueHandler ->> queue : [queue > 0] queue.get()
+	activate queue #red
 	queue --> queueHandler : return
 	deactivate queue
-	activate alarm #green
 	alt mode == "server"
 		queueHandler -> db : insert('event_history', {device_id,type_id,attr_id,data,date})
 		activate db #brown
 		deactivate db
 		queueHandler -> alarm : check(device_id,attr_id,db_data)
+		activate alarm #green
 		alarm -> gmail : [event == alarmThreshold] <<call alert object(s)>>
+		deactivate alarm
 		activate gmail #lightgreen
 		queueHandler --> gmail : triggerEvent(master_ip,master_port,data)
 		gmail --> owner : <<send mail>>
@@ -116,7 +117,6 @@ end note
 		activate db #brown
 		deactivate db
 	end	
-	deactivate alarm
 	deactivate queueHandler
 end
 |||
