@@ -3,7 +3,7 @@
 edo.py - This Module is for the most used classes and methods - daniel@engvalls.eu
 '''
 
-__version__ = "$Revision: 20140810.1051 $"
+__version__ = "$Revision: 20140923.1080 $"
 
 import sys
 import threading
@@ -1061,7 +1061,7 @@ class edoMCPvalue(threading.Thread):
     '''
     Class object to read MCP3008
     object = edoMCPvalue(minref, adc_in, **kwargs)
-    object = edoMCPvalue(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, loggerObject=loggerObject)
+    object = edoMCPvalue(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, check_times=100, loggerObject=loggerObject)
     '''
     def __init__(self, minref=510, adc_in=0, **kwargs):
         threading.Thread.__init__(self)
@@ -1076,6 +1076,7 @@ class edoMCPvalue(threading.Thread):
         self.cspin = kwargs.get('cspin', 25)
         self.check_int = kwargs.get('check_int', 1)
         self.sleep_int = kwargs.get('sleep_int', 0.000001)
+        self.check_times = kwargs.get('check_times', 100)
         self.loggerObject = kwargs.get('loggerObject', None)
         self.objLog = kwargs.get('loggerObject', None)
         self.queue = Queue.Queue()
@@ -1092,9 +1093,8 @@ class edoMCPvalue(threading.Thread):
         retry = 0
         result = 0
         peak = 0
-
         while retry < max_retry:
-            for x in range(1, 100):
+            for x in range(0, self.check_times):
                 value_in = readadc(self.adc_in, self.clockpin, self.mosipin, self.misopin, self.cspin)
                 if value_in > minref and value_in <= 1023 and value_in > 0:
                     count += 1
@@ -1234,6 +1234,106 @@ class edoPowerMeter(edoMCPvalue):
                         self.all_status.append(power_status)
                 else:
                     self.all_status.append(power_status)
+        return self.all_status
+
+
+class edoADCmeter(edoMCPvalue):
+    '''
+    Class object to Messure percantage through MCP3008
+    object = edoADCmeter(adc_in, **kwargs)
+    object = edoADCmeter(0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, pause_int=1, loggerObject=loggerObject)
+    '''
+    def __init__(self, adc_in=0, **kwargs):
+        import Queue
+        edoMCPvalue.__init__(self)
+        self.minref = 0
+        self.adc_in = adc_in
+        self.clockpin = kwargs.get('clockpin', 18)
+        self.mosipin = kwargs.get('mosipin', 24)
+        self.misopin = kwargs.get('misopin', 23)
+        self.cspin = kwargs.get('cspin', 25)
+        self.check_int = kwargs.get('check_int', 1)
+        self.sleep_int = kwargs.get('sleep_int', 1)
+        self.objLog = kwargs.get('loggerObject', None)
+        self.limit = kwargs.get('limit', 5)
+        self.check_times = kwargs.get('check_times', 1)
+        self.pause_int = kwargs.get('pause_int', 1)
+        self.debug = kwargs.get('debug', False)
+        self.queue = Queue.Queue()
+        self.running = False
+        self.avg_val = 0
+        self.max_val = 0
+        self.count = 0
+        self.verify_times = 1
+
+    def run(self):
+        import time
+        import os
+
+        def changed(old, new, limit):
+            if old + limit > 100:
+                if new < old - limit: return True
+            if old - limit < 0:
+                if new > old + limit: return True
+            if new > old + limit or new < old - limit:
+                return True
+            else:
+                return False
+
+        device_type = 'edoADCpercantage'
+        if not os.geteuid() == 0:
+            if self.objLog:
+                self.objLog.log('%s - has to be run as root' % device_type, 'CRITICAL')
+            else:
+                print('%s - has to be run as root' % device_type)
+            return 1
+
+        self.running = True
+        # Get initial status and supply to queue
+        self.avg_val, self.max_val, self.count = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=1, max_retry=1)
+        epoch = int(time.time())
+        self.queue.put((epoch, self.avg_val))
+
+        while self.running:
+            # For Average
+            current_value = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=1, max_retry=1)[0]
+            if changed(self.avg_val, current_value, self.limit):
+                self.avg_val = current_value
+                if self.objLog:
+                    self.objLog.log('edoValueMeter: ' + str(self.avg_val), 'INFO')
+                else:
+                    print('edoValueMeter: ' + str(self.avg_val))
+                epoch = int(time.time())
+                self.queue.put((epoch, self.avg_val))
+            # Pause the time
+            time.sleep(self.pause_int)
+
+    def stop(self):
+        self.running = False
+
+    def reset(self):
+        ''' Reset current status to force update to Queue '''
+        self.avg_val = 0
+        self.max_val = 0
+        self.count = 0
+
+    def get(self, past_seconds=0):
+        ''' Get the ADC changes within the past seconds '''
+        import time
+        import Queue
+        self.all_status = []
+        while True:
+            try:
+                value_status = self.queue.get(block=False)
+            except Queue.Empty:
+                break
+            else:
+                now = time.time()
+                if past_seconds > 0:
+                    if value_status[0] >= now - past_seconds:
+                        self.all_status.append(value_status)
+                else:
+                    self.all_status.append(value_status)
         return self.all_status
 
 
