@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 
-__version__ = "$Revision: 20140923.1082 $"
+__version__ = "$Revision: 20140927.1091 $"
 
 import sys
 import threading
@@ -1031,6 +1031,88 @@ class edoSwitch(threading.Thread):
                     self.all_status.append(switch_status)
         return self.all_status
 
+
+class edoDHT(threading.Thread):
+    '''
+    Class object to read temp or humid from DHT_11 sensor
+    object = edoDHT_humid(pin=4, limit=1, check_int=10, type=0(humid)/1(temp), logObject)
+    '''
+    def __init__(self, loggerObject=None, **kwargs):
+        threading.Thread.__init__(self)
+        import Queue
+        import Adafruit_DHT
+
+        self.objLog = loggerObject
+        self.queue = Queue.Queue()
+        self.running = False
+        self.value = 0
+        self.type = kwargs.get('type', 1)
+        self.limit = kwargs.get('limit', 0.5)
+        self.sensor = kwargs.get('sensor', Adafruit_DHT.DHT11)
+
+        if 'pin' in kwargs:
+            self.pin = kwargs['pin']
+        else:
+            self.pin = 4
+        if 'check_int' in kwargs:
+            self.check_int = kwargs['check_int']
+        else:
+            self.check_int = 10
+
+    def run(self):
+        import Adafruit_DHT
+        import time
+        import os
+
+        if not os.geteuid() == 0:
+            if self.objLog:
+                self.objLog.log('edoDHT - has to be run as root', 'CRITICAL')
+            else:
+                print('edoDHT - has to be run as root')
+            return 1
+
+        self.running = True
+        # Get initial status and supply to queue
+        self.value = Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type]
+
+        epoch = int(time.time())
+        self.queue.put((epoch, self.value))
+
+        while self.running:
+            # Get new value
+            new_value = Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type]
+            if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
+                if self.objLog:
+                    self.objLog.log('DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value))
+                else:
+                    print 'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value)
+                self.value = new_value
+                epoch = int(time.time())
+                self.queue.put((epoch, self.value))
+            # Pause for next poll
+            time.sleep(self.check_int)
+
+    def stop(self):
+        self.running = False
+
+    def get(self, past_seconds=0):
+        ''' Get the motions within the past seconds '''
+        import time
+        import Queue
+        self.all_status = []
+        while True:
+            try:
+                switch_status = self.queue.get(block=False)
+            except Queue.Empty:
+                break
+            else:
+                now = time.time()
+                if past_seconds > 0:
+                    if switch_status[0] >= now - past_seconds:
+                        self.all_status.append(switch_status)
+                else:
+                    self.all_status.append(switch_status)
+        return self.all_status
 
 def readadc(adcnum, clockpin=18, mosipin=24, misopin=23, cspin=25):
     # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
