@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 
-__version__ = "$Revision: 20140927.1091 $"
+__version__ = "$Revision: 20141002.1099 $"
 
 import sys
 import threading
@@ -1114,6 +1114,7 @@ class edoDHT(threading.Thread):
                     self.all_status.append(switch_status)
         return self.all_status
 
+
 def readadc(adcnum, clockpin=18, mosipin=24, misopin=23, cspin=25):
     # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
     import RPi.GPIO as GPIO
@@ -2027,25 +2028,168 @@ def edoPiCamera(filename, res=None):
         camera.capture(filename)
         camera.stop_preview()
 
-    # Create DB object
-    # print "Connecting to DB " + db_ip + " ",
-    # oDB = edoClassDB('mysql', (db_ip, '3306', 'readonly', db_pass, 'IPautomata'), oLog)
-    # result = oDB.sql('select automaton_id,name,client_id,modified from IPautomata.automaton')
-    # print "[OK]"
+
+class Luxmeter:
+    i2c = None
+
+    def __init__(self, address=0x39, debug=0, pause=0.8):
+        from Adafruit_I2C import Adafruit_I2C
+        self.i2c = Adafruit_I2C(address)
+        self.address = address
+        self.pause = pause
+        self.debug = debug
+        self.gain = 0  # no gain preselected
+        self.i2c.write8(0x80, 0x03)     # enable the device
+
+    def setGain(self, gain=1):
+        """ Set the gain """
+        import time
+        if (gain != self.gain):
+            if (gain == 1):
+                self.i2c.write8(0x81, 0x02)
+                if (self.debug):
+                    print "Setting low gain"
+            else:
+                self.i2c.write8(0x81, 0x12)
+                if (self.debug):
+                    print "Setting high gain"
+            self.gain = gain
+            # set gain = 1X and timing
+            # set gain = 16X and timing
+            # safe gain for calculation
+            time.sleep(self.pause)
+
+    def readWord(self, reg):
+        """Reads a word from the I2C device"""
+        try:
+            wordval = self.i2c.readU16(reg)
+            newval = self.i2c.reverseByteOrder(wordval)
+            if (self.debug):
+                print("I2C: Device 0x%02X returned 0x%04X from reg 0x%02X" % (self.address, wordval & 0xFFFF, reg))
+            return newval
+        except IOError:
+            print("Error accessing 0x%02X: Check your I2C address" % self.address)
+            return -1
+
+    def readFull(self, reg=0x8C):
+        """Reads visible+IR diode from the I2C device"""
+        return self.readWord(reg)
+
+    def readIR(self, reg=0x8E):
+        """Reads IR only diode from the I2C device"""
+        return self.readWord(reg)
+
+    def getLux(self, gain=1):
+        """Grabs a lux reading either with autoranging (gain=0) or with a specified gain (1, 16)"""
+        if (gain == 1 or gain == 16):
+            self.setGain(gain)  # low/highGain
+            ambient = self.readFull()
+            IR = self.readIR()
+        elif (gain == 0):  # auto gain
+            self.setGain(16)  # first try highGain
+            ambient = self.readFull()
+            if (ambient < 65535):
+                IR = self.readIR()
+
+        if (ambient >= 65535 or IR >= 65535):  # value(s) exeed(s) data
+            self.setGain(1)  # set lowGain
+            ambient = self.readFull()
+            IR = self.readIR()
+
+        if (self.gain == 1):
+            ambient *= 16    # scale 1x to 16x
+            IR *= 16         # scale 1x to 16x
+
+        ratio = (IR / float(ambient))  # changed to make it run under python
+
+        if (self.debug):
+                print "IR Result", IR
+                print "Ambient Result", ambient
+        if ((ratio >= 0) & (ratio <= 0.52)):
+            lux = (0.0315 * ambient) - (0.0593 * ambient * (ratio ** 1.4))
+        elif (ratio <= 0.65):
+            lux = (0.0229 * ambient) - (0.0291 * IR)
+        elif (ratio <= 0.80):
+            lux = (0.0157 * ambient) - (0.018 * IR)
+        elif (ratio <= 1.3):
+            lux = (0.00338 * ambient) - (0.0026 * IR)
+        elif (ratio > 1.3):
+            lux = 0
+        return lux
 
 
-    ## oDB.insert('table1',{'col1': 'test', 'col2': '20'})
-    ## oDB.update('table1',{'id': '1'}, {'col2': 10})
-    ## aa = oDB.select('table1', {'col2': 20})
-    ## print aa
-    ## oDB.delete('table1', 'col2 > 10')
+class edoLuxMeter(threading.Thread):
+    '''
+    Class object to read lux from a TSL2561
+    object = edoLuxMeter(limit=1, check_int=10, logObject)
+    '''
+    def __init__(self, loggerObject=None, **kwargs):
+        threading.Thread.__init__(self)
+        import Queue
 
-    # oConfig = edoClassConfig('edo.cfg', oLog)
-    # oConfig.AddUpdate('Section1', {'option1': 'value1'})
-    # oConfig.AddUpdate('Section1', {'option2': 'value2'})
-    # oConfig.AddUpdate('Section2', {'option1': 'muuu'})
-    # a = oConfig.getAll('Section1')
-    # print a['option1']
-    # oConfig.add('Section1', {'option1': 'nya'})
-    # a = oConfig.getAll('Section1')
-    # print a['option1']
+        self.objLog = loggerObject
+        self.queue = Queue.Queue()
+        self.running = False
+        self.value = 0
+        self.limit = kwargs.get('limit', 5)
+
+        if 'check_int' in kwargs:
+            self.check_int = kwargs['check_int']
+        else:
+            self.check_int = 10
+
+        self.luxmeter = Luxmeter()
+
+    def run(self):
+        import time
+        import os
+
+        if not os.geteuid() == 0:
+            if self.objLog:
+                self.objLog.log('edoLux - has to be run as root', 'CRITICAL')
+            else:
+                print('edoLux - has to be run as root')
+            return 1
+
+        self.running = True
+        # Get initial status and supply to queue
+        self.value = self.luxmeter.getLux()
+
+        epoch = int(time.time())
+        self.queue.put((epoch, self.value))
+
+        while self.running:
+            # Get new value
+            new_value = self.luxmeter.getLux()
+            if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
+                if self.objLog:
+                    self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))
+                else:
+                    print 'Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value)
+                self.value = new_value
+                epoch = int(time.time())
+                self.queue.put((epoch, self.value))
+            # Pause for next poll
+            time.sleep(self.check_int)
+
+    def stop(self):
+        self.running = False
+
+    def get(self, past_seconds=0):
+        ''' Get the motions within the past seconds '''
+        import time
+        import Queue
+        self.all_status = []
+        while True:
+            try:
+                switch_status = self.queue.get(block=False)
+            except Queue.Empty:
+                break
+            else:
+                now = time.time()
+                if past_seconds > 0:
+                    if switch_status[0] >= now - past_seconds:
+                        self.all_status.append(switch_status)
+                else:
+                    self.all_status.append(switch_status)
+        return self.all_status
