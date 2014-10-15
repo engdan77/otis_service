@@ -1,0 +1,172 @@
+@startuml
+scale 2/3
+
+participant main as "__main__"
+participant log as "logObject:edoClassFileLogger"
+participant config as "configObject:edoClassConfig"
+participant sensors as "sensors:getEnabledSensors"
+participant devList as "AlarmDevList:getEnabledAlarms"
+participant sensors as "getEnabledSensors"
+participant startLoop as "startLoop()" #yellow
+database db as "objDB:edoClassDB"
+participant alarm as "alarm:alarmClass" #green
+participant gmail as "alarm_gmail:edoGmailAlarm" #lightgreen
+actor owner #green
+participant triggerListener as "triggerListener:triggerQueueListener" #brown
+participant queueHandler as "objTriggerQueueHandler:triggerQueueHandler" #brown
+participant queue as "triggerQueue:Queue" #red
+participant sensorCheck as "objSensorCheck:sensorCheck" #red
+participant motion as "sensor_motionpir:edoPirMotion" #gray
+participant sensor as "sensor_doorswitch:edoSwitch" #gray
+participant power as "sensor_power:edoPowerMeter" #gray
+actor thief #red
+
+== Initialisation ==
+main -> log : init():LogObject
+activate log
+log -> main : log
+deactivate log
+|||
+main -> config : init():ConfigObject
+activate config
+config -> main : config
+deactivate config
+|||
+main -> db : init():edoClassDB
+activate db
+db -> main : db
+deactivate db
+|||
+main -> sensors : getEnabledSensors(configObject):List
+activate sensors
+note right of devList
+	This object represents all
+	the sensors to be monitored
+endnote
+sensors -> main : sensors
+deactivate sensors
+|||
+main -> alarm : init(config,db,devList,led,cameras):List
+activate alarm #green
+note right of devList
+	Object responsible for check if
+	alarm is defined, and trigger
+	handler of triggered
+endnote
+alarm -> main : alarm
+deactivate alarm
+|||
+main -> queue : init():Queue::queue
+note left of queue
+	This is the queue where all events passed through
+endnote
+activate queue #red
+queue -> main : queue
+deactivate queue
+
+ == startLoop ==
+main -> startLoop : startLoop(mode, deviceId, sensors, db, alarm, log)
+activate startLoop #yellow
+
+startLoop ->> triggerListener : init(listenPort, triggerQueue):Thread::thread
+loop
+	activate triggerListener #brown
+note left of triggerListener
+Starts server 
+and listens for
+incoming events
+end note
+	triggerListener -->> queue : queue.put()
+	activate queue #red
+	alarm --> triggerListener : <<Match criteria with current status in DB>>
+	activate alarm #green
+	triggerListener --> alarm : return
+	deactivate queue
+	deactivate alarm
+	deactivate triggerListener
+	|||
+end
+
+startLoop ->> queueHandler : init(mode, triggerQueue):Thread::thread
+loop
+	activate queueHandler #brown
+note right of queueHandler
+Thread that handles
+events in queue
+end note
+	queueHandler ->> queue : [queue > 0] queue.get()
+	activate queue #red
+	queue --> queueHandler : return
+	deactivate queue
+	alt mode == "server"
+		queueHandler -> db : insert('event_history', {device_id,type_id,attr_id,data,date})
+		activate db #brown
+		deactivate db
+		queueHandler -> alarm : check(device_id,attr_id,db_data)
+		activate alarm #green
+		alarm -> gmail : [event == alarmThreshold] <<call alert object(s)>>
+		deactivate alarm
+		activate gmail #lightgreen
+		queueHandler --> gmail : triggerEvent(master_ip,master_port,data)
+		gmail --> owner : <<send mail>>
+		activate owner #green
+		deactivate owner
+		deactivate gmail
+	else mode == "client"
+		queueHandler --> db : triggerEvent(master_ip,master_port,data)
+		activate db #brown
+		deactivate db
+	end	
+	deactivate queueHandler
+end
+|||
+startLoop ->> sensorCheck : [sensors > 0] init(triggerQueue, sensors):Thread::thread
+note left of sensorCheck
+Thread that polls
+data from sensors
+end note
+loop
+	activate sensorCheck #red
+	sensorCheck -> motion : [sensor == motion] get():dict
+	activate motion #gray
+	motion --> sensorCheck : <<return status>>
+	deactivate motion
+
+	activate sensor #gray
+	sensorCheck -> sensor : [sensor == switch] get():dict
+	sensor --> thief : <<check sensor>>
+	activate thief #purple
+	thief --> sensor : return
+	deactivate thief
+	sensor --> sensorCheck : <<return status>>
+	deactivate sensor
+	
+	sensorCheck -> power : [sensor == power] get():dict
+	activate power #gray
+	power --> sensorCheck : <<return status>>
+	deactivate power
+	deactivate sensor
+	sensorCheck -> queue : [triggered == True] queue.put()
+	activate queue #red
+	deactivate queue
+	deactivate sensorCheck
+end
+
+|||
+ == Exit ==
+group [keyPressed == "Enter"]
+	startLoop -> sensorCheck : stop()
+	activate sensorCheck #red
+	destroy sensorCheck
+	startLoop -> triggerListener : stop()
+	activate triggerListener #brown
+	destroy triggerListener
+	startLoop -> queueHandler : stop()
+	activate queueHandler #brown
+	destroy queueHandler
+	startLoop -> alarm : stop()
+	activate alarm #green
+	destroy alarm
+	destroy startLoop
+end
+@enduml

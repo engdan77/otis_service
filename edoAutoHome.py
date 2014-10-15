@@ -1,4 +1,29 @@
 #!/usr/bin/env python
+
+# edoAutoHome.py - This Project for HomeAutomation
+# URL: https://github.com/engdan77/edoautohome
+# Copyright (c) 2014
+# Author: Daniel Engvall (daniel@engvalls.eu)
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
 import threading
 import SocketServer
 import json
@@ -9,7 +34,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20140812.398 $"
+__version__ = "$Revision: 20141015.415 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -66,12 +91,29 @@ def add_attribute(db_ip, db_user, db_pass, db_name, attr_id, attr_name, logObjec
             oDB.insert('attribute', {'attr_id': attr_id, 'name': attr_name})
 
 
+def attr_to_dev(db_ip, db_user, db_pass, db_name, attr_id, dev_id, logObject):
+        ''' Associate attr to dev in database  '''
+        from edo import edoTestSocket, edoClassDB
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            oDB.insert('device_attr', {'attr_id': attr_id, 'device_id': dev_id, 'data': 'None', 'updated': edoGetDateTime()})
+
+
 def list_attribute(db_ip, db_user, db_pass, db_name, logObject):
         ''' List attributes in database  '''
         from edo import edoTestSocket, edoClassDB
         if edoTestSocket(db_ip, 3306, logObject) == 0:
             oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
             result = oDB.select('attribute', "id > 0")
+            print(result)
+
+
+def list_attr_dev(db_ip, db_user, db_pass, db_name, logObject):
+        ''' List device attributes in database  '''
+        from edo import edoTestSocket, edoClassDB
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            result = oDB.select('device_attr', "id > 0")
             print(result)
 
 
@@ -222,6 +264,16 @@ class triggerQueueHandler(threading.Thread):
                     date = edoEpochToDate(data[0][0])
                     db_data = str(data[0][1])
                     alert = date + ",id=" + str(deviceId) + ": " + "Power Changed " + db_data
+                elif attr_id == 4:
+                    # Humidity Meter
+                    date = edoEpochToDate(data[0][0])
+                    db_data = str(data[0][1])
+                    alert = date + ",id=" + str(deviceId) + ": " + "Humidity Changed " + db_data
+                elif attr_id == 5:
+                    # Temperature Meter
+                    date = edoEpochToDate(data[0][0])
+                    db_data = str(data[0][1])
+                    alert = date + ",id=" + str(deviceId) + ": " + "Temperature Changed " + db_data
 
                 # If LCD exists
                 if self.objLcd:
@@ -324,6 +376,20 @@ class sensorCheck(threading.Thread):
                     if len(power_status) > 0:
                         result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 3, 'data': power_status}
                         self.queue.put(result)
+            for sensor in self.sensorList:
+                if sensor.__class__.__name__ is "edoDHT":
+                    # Handler for DHT11_humid
+                    if sensor.type == 0:
+                        dht_humid_status = sensor.get()
+                        if len(dht_humid_status) > 0:
+                            result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 4, 'data': dht_humid_status}
+                            self.queue.put(result)
+                    # Handler for DHT11_temp
+                    if sensor.type == 1:
+                        dht_temp_status = sensor.get()
+                        if len(dht_temp_status) > 0:
+                            result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 5, 'data': dht_temp_status}
+                            self.queue.put(result)
             time.sleep(0.1)
 
     def stop(self):
@@ -458,6 +524,14 @@ def getEnabledSensors(configObject, logObject=None):
         # interval = configObject.get('sensor_doorswitch', 'interval')
         sensor_doorswitch = edoSwitch(logObject, pin=int(pin))
         sensors.append(sensor_doorswitch)
+    if configObject.get('sensor_dht11_humid', 'enable') == 'true':
+        pin = configObject.get('sensor_dht11_humid', 'pin')
+        sensor_dht11_humid = edoDHT(logObject, pin=int(pin), type=0)
+        sensors.append(sensor_dht11_humid)
+    if configObject.get('sensor_dht11_temp', 'enable') == 'true':
+        pin = configObject.get('sensor_dht11_temp', 'pin')
+        sensor_dht11_temp = edoDHT(logObject, pin=int(pin), type=1)
+        sensors.append(sensor_dht11_temp)
     if configObject.get('sensor_power', 'enable') == 'true':
         adc_in = int(configObject.get('sensor_power', 'adc_in'))
         minref = int(configObject.get('sensor_power', 'minref'))
@@ -775,6 +849,8 @@ if __name__ == "__main__":
     parser.add_argument("--add_device", help="Add device to database", action="store_true")
     parser.add_argument("--list_attribute", help="List attributes in database", action="store_true")
     parser.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
+    parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
+    parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -847,6 +923,23 @@ if __name__ == "__main__":
                        server_settings['db_pass'],
                        server_settings['db_name'], logObject)
 
+    if args.list_attrdev:
+        # List attribute to devices in database
+        list_attr_dev(server_settings['db_ip'],
+                      server_settings['db_user'],
+                      server_settings['db_pass'],
+                      server_settings['db_name'], logObject)
+
+    if args.attr_to_dev:
+        # Associate attribute to device
+        attr_id = raw_input("Enter attribute id: ")
+        dev_id = raw_input("Enter device id to associate attribute to: ")
+        attr_to_dev(server_settings['db_ip'],
+                    server_settings['db_user'],
+                    server_settings['db_pass'],
+                    server_settings['db_name'],
+                    attr_id, dev_id, logObject)
+
     if args.start:
         # Get list of cameras
         cameras = getEnabledCameras(configObject, logObject)
@@ -868,8 +961,7 @@ if __name__ == "__main__":
                 objLed.start()
                 objLed.led_on(1)
                 objLed.led_off()
-            else:
-                objLed = None
+
             objAlarm = alarmClass(configObject, objDB, AlarmDevList, objLed, cameras)
         else:
             objDB = None
