@@ -69,6 +69,20 @@ I will likely spend more time on this documentation but this is in short what ha
   * Clients sends events to Master
   * Master stores data to MySQL
 
+**2014-10-16**
+Eventually built the device to be kept in the livingroom with majority of the the sensors, and developed classes for those.
+
+*Hardware*
+* Livingroom Board *[Device 3]*
+ * Raspberry Pi
+ * DHT11 sensor for humidity and temperature
+ * MQ2 smoke sensor
+ * TSL2561 Lux Sensor for meassure brightness
+
+*Software*
+ * Tweaks made to Current Meter class to fix false alerts
+ * Classed developed for DHT11, MQ2 and TSL2561 creating threads for monitoring
+
 
 -------------------------
 Keywords
@@ -89,6 +103,9 @@ Currently Support Sensors and Units
 * Led (this is show when larm-mode is enabled by blinking)
 * Non-Intrusive Current Meter *[Attribute 3]* (currently monitoring if stove is left on when leaving house) - https://www.sparkfun.com/products/11005
 * RaspberryPI-camera - http://www.raspberrypi.org/product/camera-module/
+* DHT11 - https://learn.adafruit.com/dht
+* MQ2 -  http://www.seeedstudio.com/depot/datasheet/MQ-2.pdf
+* TSL2561 - https://learn.adafruit.com/tsl2561
 
 -------------------------
 Planned Support Sensors and Units

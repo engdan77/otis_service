@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141014.1099 $"
+__version__ = "$Revision: 20141015.1099 $"
 
 import sys
 import threading
@@ -1027,7 +1027,7 @@ class edoDHT(threading.Thread):
         self.running = False
         self.value = 0
         self.type = kwargs.get('type', 1)
-        self.limit = kwargs.get('limit', 0.5)
+        self.limit = float(kwargs.get('limit', 0.5))
         self.sensor = kwargs.get('sensor', Adafruit_DHT.DHT11)
 
         if 'pin' in kwargs:

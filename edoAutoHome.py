@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141014.413 $"
+__version__ = "$Revision: 20141015.414 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -497,11 +497,13 @@ def getEnabledSensors(configObject, logObject=None):
         sensors.append(sensor_doorswitch)
     if configObject.get('sensor_dht11_humid', 'enable') == 'true':
         pin = configObject.get('sensor_dht11_humid', 'pin')
-        sensor_dht11_humid = edoDHT(logObject, pin=int(pin), type=0)
+        limit = configObject.get('sensor_dht11_humid', 'limit')
+        sensor_dht11_humid = edoDHT(logObject, pin=int(pin), type=0, limit=limit)
         sensors.append(sensor_dht11_humid)
     if configObject.get('sensor_dht11_temp', 'enable') == 'true':
         pin = configObject.get('sensor_dht11_temp', 'pin')
-        sensor_dht11_temp = edoDHT(logObject, pin=int(pin), type=1)
+        limit = configObject.get('sensor_dht11_humid', 'limit')
+        sensor_dht11_temp = edoDHT(logObject, pin=int(pin), type=1, limit=limit)
         sensors.append(sensor_dht11_temp)
     if configObject.get('sensor_power', 'enable') == 'true':
         adc_in = int(configObject.get('sensor_power', 'adc_in'))
