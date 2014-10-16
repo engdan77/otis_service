@@ -1,10 +1,4 @@
 #!/usr/bin/env python
-
-# edoAutoHome.py - This Project for HomeAutomation
-# URL: https://github.com/engdan77/edoautohome
-# Author: Daniel Engvall (daniel@engvalls.eu)
-
-
 import threading
 import SocketServer
 import json
@@ -15,7 +9,11 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141015.415 $"
+<<<<<<< HEAD
+__version__ = "$Revision: 20140630.382 $"
+=======
+__version__ = "$Revision: 20140630.383 $"
+>>>>>>> qnap/kitchen
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -72,29 +70,12 @@ def add_attribute(db_ip, db_user, db_pass, db_name, attr_id, attr_name, logObjec
             oDB.insert('attribute', {'attr_id': attr_id, 'name': attr_name})
 
 
-def attr_to_dev(db_ip, db_user, db_pass, db_name, attr_id, dev_id, logObject):
-        ''' Associate attr to dev in database  '''
-        from edo import edoTestSocket, edoClassDB
-        if edoTestSocket(db_ip, 3306, logObject) == 0:
-            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
-            oDB.insert('device_attr', {'attr_id': attr_id, 'device_id': dev_id, 'data': 'None', 'updated': edoGetDateTime()})
-
-
 def list_attribute(db_ip, db_user, db_pass, db_name, logObject):
         ''' List attributes in database  '''
         from edo import edoTestSocket, edoClassDB
         if edoTestSocket(db_ip, 3306, logObject) == 0:
             oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
             result = oDB.select('attribute', "id > 0")
-            print(result)
-
-
-def list_attr_dev(db_ip, db_user, db_pass, db_name, logObject):
-        ''' List device attributes in database  '''
-        from edo import edoTestSocket, edoClassDB
-        if edoTestSocket(db_ip, 3306, logObject) == 0:
-            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
-            result = oDB.select('device_attr', "id > 0")
             print(result)
 
 
@@ -122,7 +103,7 @@ class edoThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             pass
         else:
             self.server.queue.put(data)
-            print(edoGetDateTime() + ": Recieved - " + str(data))
+            print("Recieved: " + str(data))
 
         response = "ok"
         self.request.sendall(response)
@@ -245,16 +226,6 @@ class triggerQueueHandler(threading.Thread):
                     date = edoEpochToDate(data[0][0])
                     db_data = str(data[0][1])
                     alert = date + ",id=" + str(deviceId) + ": " + "Power Changed " + db_data
-                elif attr_id == 4:
-                    # Humidity Meter
-                    date = edoEpochToDate(data[0][0])
-                    db_data = str(data[0][1])
-                    alert = date + ",id=" + str(deviceId) + ": " + "Humidity Changed " + db_data
-                elif attr_id == 5:
-                    # Temperature Meter
-                    date = edoEpochToDate(data[0][0])
-                    db_data = str(data[0][1])
-                    alert = date + ",id=" + str(deviceId) + ": " + "Temperature Changed " + db_data
 
                 # If LCD exists
                 if self.objLcd:
@@ -357,20 +328,6 @@ class sensorCheck(threading.Thread):
                     if len(power_status) > 0:
                         result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 3, 'data': power_status}
                         self.queue.put(result)
-            for sensor in self.sensorList:
-                if sensor.__class__.__name__ is "edoDHT":
-                    # Handler for DHT11_humid
-                    if sensor.type == 0:
-                        dht_humid_status = sensor.get()
-                        if len(dht_humid_status) > 0:
-                            result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 4, 'data': dht_humid_status}
-                            self.queue.put(result)
-                    # Handler for DHT11_temp
-                    if sensor.type == 1:
-                        dht_temp_status = sensor.get()
-                        if len(dht_temp_status) > 0:
-                            result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 5, 'data': dht_temp_status}
-                            self.queue.put(result)
             time.sleep(0.1)
 
     def stop(self):
@@ -408,7 +365,7 @@ def triggerEvent(ip, port, data):
         sock.connect((ip, port))
         sock.sendall(json.dumps(data))
         response = sock.recv(1024)
-        print edoGetDateTime() + ": tiriggerEvent_Received: {}".format(response)
+        print "tiggerEvent_Received: {}".format(response)
     except Exception as e:
         return str(e)
     else:
@@ -505,16 +462,6 @@ def getEnabledSensors(configObject, logObject=None):
         # interval = configObject.get('sensor_doorswitch', 'interval')
         sensor_doorswitch = edoSwitch(logObject, pin=int(pin))
         sensors.append(sensor_doorswitch)
-    if configObject.get('sensor_dht11_humid', 'enable') == 'true':
-        pin = configObject.get('sensor_dht11_humid', 'pin')
-        limit = configObject.get('sensor_dht11_humid', 'limit')
-        sensor_dht11_humid = edoDHT(logObject, pin=int(pin), type=0, limit=limit)
-        sensors.append(sensor_dht11_humid)
-    if configObject.get('sensor_dht11_temp', 'enable') == 'true':
-        pin = configObject.get('sensor_dht11_temp', 'pin')
-        limit = configObject.get('sensor_dht11_humid', 'limit')
-        sensor_dht11_temp = edoDHT(logObject, pin=int(pin), type=1, limit=limit)
-        sensors.append(sensor_dht11_temp)
     if configObject.get('sensor_power', 'enable') == 'true':
         adc_in = int(configObject.get('sensor_power', 'adc_in'))
         minref = int(configObject.get('sensor_power', 'minref'))
@@ -738,20 +685,6 @@ def checkDeviceCondition(objDB, argDevice, argAttr, argData):
         return False
 
 
-def send_reset_all_clients():
-    ''' Function to send reset_all to all clients '''
-    print "debug1"
-    print alarm_settings
-    print alarm_settings.get('clients_ip', None)
-    print type(alarm_settings.get('clients_ip', None))
-    import json
-    ips = json.loads(alarm_settings.get('clients_ip', None))
-    print edoGetDateTime() + ": Send Reset Sensors - " + str(ips)
-    if len(ips) > 0:
-        for ip, port in ips:
-            triggerEvent(str(ip), int(port), 'reset_all_sensors')
-
-
 class alarmClass():
     ''' Class that handles alarm notifications '''
 
@@ -780,10 +713,6 @@ class alarmClass():
             if self.objLed:
                 logObject.log("Start Led blink", 'DEBUG')
                 self.objLed.blink()
-            # Send reset to all clients sensors to get alarm if currently
-            # active
-                send_reset_all_clients()
-
         elif all(result) is False and self.active is True:
             print edoGetDateTime() + ": Alarm disarmed"
             logObject.log("Alarm disarmed", 'INFO')
@@ -794,14 +723,11 @@ class alarmClass():
 
         if self.active is True:
             # Trigger alarm when active
-            import time
             for AlarmDev in AlarmDevList:
                 if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer', 'enable') == 'true':
                     print edoGetDateTime() + ": BUZZ !!"
                     logObject.log("BUZZ !!", 'DEBUG')
-                    AlarmDev.buzz_on(0.5)
-                    time.sleep(0.2)
-                    AlarmDev.buzz_on(0.5)
+                    AlarmDev.buzz_on(3)
                 if AlarmDev.__class__.__name__ is "edoGmailAlarm":
                     mail_body = edoGetDateTime() + ": " + str(argData)
                     if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
@@ -832,8 +758,6 @@ if __name__ == "__main__":
     parser.add_argument("--add_device", help="Add device to database", action="store_true")
     parser.add_argument("--list_attribute", help="List attributes in database", action="store_true")
     parser.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
-    parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
-    parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -906,23 +830,6 @@ if __name__ == "__main__":
                        server_settings['db_pass'],
                        server_settings['db_name'], logObject)
 
-    if args.list_attrdev:
-        # List attribute to devices in database
-        list_attr_dev(server_settings['db_ip'],
-                      server_settings['db_user'],
-                      server_settings['db_pass'],
-                      server_settings['db_name'], logObject)
-
-    if args.attr_to_dev:
-        # Associate attribute to device
-        attr_id = raw_input("Enter attribute id: ")
-        dev_id = raw_input("Enter device id to associate attribute to: ")
-        attr_to_dev(server_settings['db_ip'],
-                    server_settings['db_user'],
-                    server_settings['db_pass'],
-                    server_settings['db_name'],
-                    attr_id, dev_id, logObject)
-
     if args.start:
         # Get list of cameras
         cameras = getEnabledCameras(configObject, logObject)
@@ -944,7 +851,8 @@ if __name__ == "__main__":
                 objLed.start()
                 objLed.led_on(1)
                 objLed.led_off()
-
+            else:
+                objLed = None
             objAlarm = alarmClass(configObject, objDB, AlarmDevList, objLed, cameras)
         else:
             objDB = None
