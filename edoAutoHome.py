@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141015.415 $"
+__version__ = "$Revision: 20141016.415 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -944,7 +944,8 @@ if __name__ == "__main__":
                 objLed.start()
                 objLed.led_on(1)
                 objLed.led_off()
-
+            else:
+                objLed = None
             objAlarm = alarmClass(configObject, objDB, AlarmDevList, objLed, cameras)
         else:
             objDB = None
