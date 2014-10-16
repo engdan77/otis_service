@@ -257,6 +257,9 @@ Pictures
 *Scematic over the Kitchen Board [Device 2]*
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_3_Schematic_Kitchen.jpg)
 
+*Scematic over the Livingroom Board [Device 3]*
+![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_7_Schematic_Livingroom.png)
+
 -------------------------
 Reference to other Projects and Modules
 -------------------------
