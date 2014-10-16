@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141015.1099 $"
+__version__ = "$Revision: 20141016.1103 $"
 
 import sys
 import threading
@@ -1028,6 +1028,7 @@ class edoDHT(threading.Thread):
         self.value = 0
         self.type = kwargs.get('type', 1)
         self.limit = float(kwargs.get('limit', 0.5))
+        self.verify_times = 3
         self.sensor = kwargs.get('sensor', Adafruit_DHT.DHT11)
 
         if 'pin' in kwargs:
@@ -1051,6 +1052,14 @@ class edoDHT(threading.Thread):
                 print('edoDHT - has to be run as root')
             return 1
 
+        def changed(old, new, limit):
+            if new > old + limit:
+                return True
+            elif new < old - limit:
+                return True
+            else:
+                return False
+
         self.running = True
         # Get initial status and supply to queue
         self.value = Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type]
@@ -1061,7 +1070,11 @@ class edoDHT(threading.Thread):
         while self.running:
             # Get new value
             new_value = Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type]
-            if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
+
+            # Read and ignore miss-readings
+            verified = [changed(new_value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i in range(1, self.verify_times)]
+
+            if (new_value > self.value + self.limit) or (new_value < self.value - self.limit) and all(verified):
                 if self.objLog:
                     self.objLog.log('DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value))
                 else:
