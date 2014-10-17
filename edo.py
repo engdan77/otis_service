@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141017.1106 $"
+__version__ = "$Revision: 20141017.1110 $"
 
 import sys
 import threading
@@ -1074,7 +1074,7 @@ class edoDHT(threading.Thread):
             # Read and ignore miss-readings
             verified = [changed(self.value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i in range(1, self.verify_times)]
 
-            # print "debug: ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
+            # print "debug: type %s ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (self.type, new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
             if ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified):
                 if self.objLog:
                     self.objLog.log('DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value))
