@@ -359,6 +359,45 @@ ex.
 		    self.queue.put(result)
 
 
+*Step 6)* Create attributes to database, associate and associate to device
+
+ex.
+
+	~/git/edoautohome # ./edoAutoHome.py --list_device
+	((1L, 1L, 'hall', 'Solna'), 
+	 (2L, 2L, 'kitchen', 'Solna'), 
+	 (3L, 3L, 'livingroom', 'Solna'))
+
+	~/git/edoautohome # ./edoAutoHome.py --list_attribute
+	((1L, 1L, 'Motion'), 
+	 (2L, 2L, 'Door'), 
+	 (3L, 3L, 'Stove'), 
+	 (4L, 4L, 'Humidity'), 
+	 (5L, 5L, 'Temperature'))
+
+	~/git/edoautohome # ./edoAutoHome.py --add_attribute
+	Enter id: 6
+	Enter Name of attribute: Smoke
+
+	~/git/edoautohome # ./edoAutoHome.py --list_attrdev
+	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
+	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
+	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
+	 (4L, 3L, '4', '32.0', '2014-10-17 09:04:42'), 
+	 (5L, 3L, '5', '27.0', '2014-10-17 09:04:43'))
+
+	~/git/edoautohome # ./edoAutoHome.py --attr_to_dev
+	Enter attribute id: 6
+	Enter device id to associate attribute to: 3
+
+	~/git/edoautohome # ./edoAutoHome.py --list_attrdev
+	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
+	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
+	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
+	 (4L, 3L, '4', '32.0', '2014-10-17 09:04:42'), 
+	 (5L, 3L, '5', '27.0', '2014-10-17 09:04:43'), 
+	 (6L, 3L, '6', 'None', '2014-10-18 12:16:11'))
+
 
 
 -------------------------
