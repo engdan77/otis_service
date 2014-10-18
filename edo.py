@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141018.1110 $"
+__version__ = "$Revision: 20141018.1114 $"
 
 import sys
 import threading
@@ -2147,14 +2147,14 @@ class edoLuxMeter(threading.Thread):
 
         self.running = True
         # Get initial status and supply to queue
-        self.value = self.luxmeter.getLux()
+        self.value = int(self.luxmeter.getLux())
 
         epoch = int(time.time())
         self.queue.put((epoch, self.value))
 
         while self.running:
             # Get new value
-            new_value = self.luxmeter.getLux()
+            new_value = int(self.luxmeter.getLux())
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
                     self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))

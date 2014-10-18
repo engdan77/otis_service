@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141018.420 $"
+__version__ = "$Revision: 20141018.424 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -541,7 +541,6 @@ def getEnabledSensors(configObject, logObject=None):
         sensors.append(sensor_dht11_temp)
     if configObject.get('sensor_mq2', 'enable') == 'true':
         adc_in = int(configObject.get('sensor_mq2', 'adc_in'))
-        minref = int(configObject.get('sensor_mq2', 'minref'))
         clockpin = int(configObject.get('sensor_mq2', 'clockpin'))
         mosipin = int(configObject.get('sensor_mq2', 'mosipin'))
         misopin = int(configObject.get('sensor_mq2', 'misopin'))
@@ -550,11 +549,11 @@ def getEnabledSensors(configObject, logObject=None):
         check_int = int(configObject.get('sensor_mq2', 'check_int'))
         pause_int = int(configObject.get('sensor_mq2', 'pause_int'))
         limit = int(configObject.get('sensor_mq2', 'limit'))
-        sensor_mq2 = edoADCmeter(0, clockpin=clockpin, mosipin=mosipin, misopin=misopin, cspin=cspin, check_int=check_int, sleep_int=sleep_int, pause_int=pause_int, limit=limit, loggerObject=loggerObject)
+        sensor_mq2 = edoADCmeter(adc_in, clockpin=clockpin, mosipin=mosipin, misopin=misopin, cspin=cspin, check_int=check_int, sleep_int=sleep_int, pause_int=pause_int, limit=limit, loggerObject=logObject)
         sensors.append(sensor_mq2)
     if configObject.get('sensor_luxmeter', 'enable') == 'true':
-        limit = configObject.get('sensor_luxmeter', 'limit')
-        check_int = configObject.get('sensor_luxmeter', 'check_int')
+        limit = int(configObject.get('sensor_luxmeter', 'limit'))
+        check_int = int(configObject.get('sensor_luxmeter', 'check_int'))
         sensor_luxmeter = edoLuxMeter(limit=limit, check_int=check_int, loggerObject=logObject)
         sensors.append(sensor_luxmeter)
     if configObject.get('sensor_power', 'enable') == 'true':
