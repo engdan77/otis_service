@@ -88,9 +88,12 @@ Eventually built the device to be kept in the livingroom with majority of the th
 Keywords
 -------------------------
 
-**device** Represents the device that you run the software on
-**attribute** This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
-**larm-mode** This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
+**device**
+Represents the device that you run the software on
+**attribute**
+This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
+**larm-mode** 
+This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
 
 -------------------------
 Currently Support Sensors and Units
@@ -214,6 +217,138 @@ Example:
 dev: This is device-number registered
 attr: This is the attribute, same as sensor or unit
 data: This is the critera where "=" means it should give you that exact data, or > / < would be used to specify a numeric threshold
+
+-------------------------
+Adding sensors
+-------------------------
+
+*Step 1)* Create class inheriting Threading.thread with the following standard methods and attributes
+- self.queue
+- run() - to be started  
+- stop() - called when stopping application
+- get() - called to get the values from queue
+
+ex.
+	class edoSwitch(threading.Thread):
+	    '''
+	    Class object to handle door switch
+	    object = edoSwitch(pin=18, check_int=0.5, logObject)
+	    '''
+	    def __init__(self, loggerObject=None, **kwargs):
+		threading.Thread.__init__(self)
+		import Queue
+		import RPi.GPIO as io
+
+		self.objLog = loggerObject
+		self.queue = Queue.Queue()
+		self.running = False
+		self.status = None
+
+		if 'pin' in kwargs:
+		    self.pin = kwargs['pin']
+
+	    def run(self):
+		import time
+		import os
+		import RPi.GPIO as io
+
+		self.running = True
+		# Get initial status and supply to queue
+		self.queue.put((epoch, self.status))
+
+		while self.running:
+		    # Get current door status
+		    # Pause for next poll
+		    time.sleep(self.check_int)
+
+	    def stop(self):
+		self.running = False
+
+	    def get(self, past_seconds=0):
+		''' Get the motions within the past seconds '''
+		import time
+		import Queue
+		self.all_status = []
+		while True:
+		    try:
+			switch_status = self.queue.get(block=False)
+		    except Queue.Empty:
+			break
+		    else:
+			now = time.time()
+			if past_seconds > 0:
+			    if switch_status[0] >= now - past_seconds:
+				self.all_status.append(switch_status)
+			else:
+			    self.all_status.append(switch_status)
+		return self.all_status
+
+
+*Step 2)* Add definition of new attribute (sensor) in edoAutoHome.conf with those attribute required 
+- Name what you want as long as you add it to configParser
+- Assure to assign a unique attr_id (Attribute ID)
+ex. 
+	[sensor_doorswitch]
+	enable = false
+	attr_id = 2
+	interval = 0.1
+	pin = 17
+
+*Step 3)* Add get Enabled Sensors = Handler of parsing configuration file getting actual sensors
+
+ex.
+	def getEnabledSensors(configObject, logObject=None):
+
+	if configObject.get('sensor_motionpir', 'enable') == 'true':
+	    pin = configObject.get('sensor_motionpir', 'pin')
+	    # interval = configObject.get('sensor_motionpir', 'interval')
+	    sensor_motionpir = edoPirMotion(logObject, pin=int(pin))
+	    sensors.append(sensor_motionpir)
+	if configObject.get('sensor_doorswitch', 'enable') == 'true':
+	    pin = configObject.get('sensor_doorswitch', 'pin')
+
+*Step 4)* Updating TriggerQueue Handler = Responsible for adding (incoming) “alerts” in queue into Database
+
+	class triggerQueueHandler(threading.Thread):
+
+ex.
+	print edoGetDateTime() + ": Handling trigger in queue " + str(trigger)
+	if attr_id == 1:
+	    # Motion Pir
+	    date = edoEpochToDate(data[0])
+	    db_data = "Motion"
+	    alert = date + ",id=" + str(deviceId) + ": Motion Detected"
+	elif attr_id == 2:
+	    # Door switch
+	    date = edoEpochToDate(data[0][0])
+	    db_data = "Door " + data[0][1]
+	    alert = date + ",id=" + str(deviceId) + ": " + db_data
+
+
+
+*Step 5)* Updating SensorCheck Handler = When sensor enabled, this class responsible for starting the thead for this check
+
+	class sensorCheck(threading.Thread):
+
+ex. 
+	# Start Loop
+	for sensor in self.sensorList:
+	    # Handler for PIR MOTION
+	    if sensor.__class__.__name__ is "edoPirMotion":
+		motions_detected = sensor.get()
+		if len(motions_detected) > 0:
+		    result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
+		    self.queue.put(result)
+
+	for sensor in self.sensorList:
+	    # Handler for SWITCH
+	    if sensor.__class__.__name__ is "edoSwitch":
+		switch_status = sensor.get()
+		if len(switch_status) > 0:
+		    result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
+		    self.queue.put(result)
+
+
 
 
 -------------------------
