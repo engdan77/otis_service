@@ -225,6 +225,7 @@ Adding sensors
 -------------------------
 
 *Step 1)* Create class inheriting Threading.thread with the following standard methods and attributes
+
 - self.queue
 - run() - to be started  
 - stop() - called when stopping application
@@ -288,8 +289,10 @@ ex.
 
 
 *Step 2)* Add definition of new attribute (sensor) in edoAutoHome.conf with those attribute required 
+
 - Name what you want as long as you add it to configParser
 - Assure to assign a unique attr_id (Attribute ID)
+
 ex. 
 
 	[sensor_doorswitch]
@@ -314,7 +317,6 @@ ex.
 
 *Step 4)* Updating TriggerQueue Handler = Responsible for adding (incoming) “alerts” in queue into Database
 
-
 ex.
 
 	class triggerQueueHandler(threading.Thread):
@@ -334,7 +336,6 @@ ex.
 
 
 *Step 5)* Updating SensorCheck Handler = When sensor enabled, this class responsible for starting the thead for this check
-
 
 ex. 
 
