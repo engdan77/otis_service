@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141017.415 $"
+__version__ = "$Revision: 20141018.420 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -255,6 +255,16 @@ class triggerQueueHandler(threading.Thread):
                     date = edoEpochToDate(data[0][0])
                     db_data = str(data[0][1])
                     alert = date + ",id=" + str(deviceId) + ": " + "Temperature Changed " + db_data
+                elif attr_id == 6:
+                    # MQ2 Meter
+                    date = edoEpochToDate(data[0][0])
+                    db_data = str(data[0][1])
+                    alert = date + ",id=" + str(deviceId) + ": " + "MQ2 Changed " + db_data
+                elif attr_id == 7:
+                    # LuxMeter
+                    date = edoEpochToDate(data[0][0])
+                    db_data = str(data[0][1])
+                    alert = date + ",id=" + str(deviceId) + ": " + "Lux Changed " + db_data
 
                 # If LCD exists
                 if self.objLcd:
@@ -371,6 +381,20 @@ class sensorCheck(threading.Thread):
                         if len(dht_temp_status) > 0:
                             result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 5, 'data': dht_temp_status}
                             self.queue.put(result)
+            for sensor in self.sensorList:
+                # Handler for MQ2
+                if sensor.__class__.__name__ is "edoADCmeter":
+                    adc_status = sensor.get()
+                    if len(adc_status) > 0:
+                        result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 6, 'data': adc_status}
+                        self.queue.put(result)
+            for sensor in self.sensorList:
+                # Handler for MQ2
+                if sensor.__class__.__name__ is "edoLuxMeter":
+                    lux_status = sensor.get()
+                    if len(lux_status) > 0:
+                        result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 7, 'data': lux_status}
+                        self.queue.put(result)
             time.sleep(0.1)
 
     def stop(self):
@@ -515,6 +539,24 @@ def getEnabledSensors(configObject, logObject=None):
         limit = configObject.get('sensor_dht11_temp', 'limit')
         sensor_dht11_temp = edoDHT(logObject, pin=int(pin), type=1, limit=limit)
         sensors.append(sensor_dht11_temp)
+    if configObject.get('sensor_mq2', 'enable') == 'true':
+        adc_in = int(configObject.get('sensor_mq2', 'adc_in'))
+        minref = int(configObject.get('sensor_mq2', 'minref'))
+        clockpin = int(configObject.get('sensor_mq2', 'clockpin'))
+        mosipin = int(configObject.get('sensor_mq2', 'mosipin'))
+        misopin = int(configObject.get('sensor_mq2', 'misopin'))
+        cspin = int(configObject.get('sensor_mq2', 'cspin'))
+        sleep_int = float(configObject.get('sensor_mq2', 'sleep_int'))
+        check_int = int(configObject.get('sensor_mq2', 'check_int'))
+        pause_int = int(configObject.get('sensor_mq2', 'pause_int'))
+        limit = int(configObject.get('sensor_mq2', 'limit'))
+        sensor_mq2 = edoADCmeter(0, clockpin=clockpin, mosipin=mosipin, misopin=misopin, cspin=cspin, check_int=check_int, sleep_int=sleep_int, pause_int=pause_int, limit=limit, loggerObject=loggerObject)
+        sensors.append(sensor_mq2)
+    if configObject.get('sensor_luxmeter', 'enable') == 'true':
+        limit = configObject.get('sensor_luxmeter', 'limit')
+        check_int = configObject.get('sensor_luxmeter', 'check_int')
+        sensor_luxmeter = edoLuxMeter(limit=limit, check_int=check_int, loggerObject=logObject)
+        sensors.append(sensor_luxmeter)
     if configObject.get('sensor_power', 'enable') == 'true':
         adc_in = int(configObject.get('sensor_power', 'adc_in'))
         minref = int(configObject.get('sensor_power', 'minref'))
@@ -526,7 +568,7 @@ def getEnabledSensors(configObject, logObject=None):
         interval = int(configObject.get('sensor_power', 'interval'))
         limit = int(configObject.get('sensor_power', 'limit'))
         debug = json.loads(configObject.get('sensor_power', 'debug').lower())
-        sensor_power = edoPowerMeter(minref, adc_in, clockpin=clockpin, mosipin=mosipin, misopin=misopin, cspin=cspin, check_in=interval, sleep_int=sleep_int, limit=limit, debug=debug, loggerObject=logObject)
+        sensor_power = edoPowerMeter(minref, adc_in, clockpin=clockpin, mosipin=mosipin, misopin=misopin, cspin=cspin, check_int=interval, sleep_int=sleep_int, limit=limit, debug=debug, loggerObject=logObject)
         sensors.append(sensor_power)
     return sensors
 
