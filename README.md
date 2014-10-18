@@ -88,11 +88,13 @@ Eventually built the device to be kept in the livingroom with majority of the th
 Keywords
 -------------------------
 
-**device**
+*device*
 Represents the device that you run the software on
-**attribute**
+
+*attribute*
 This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
-**larm-mode** 
+
+*larm-mode* 
 This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
 
 -------------------------
@@ -229,6 +231,7 @@ Adding sensors
 - get() - called to get the values from queue
 
 ex.
+
 	class edoSwitch(threading.Thread):
 	    '''
 	    Class object to handle door switch
@@ -288,6 +291,7 @@ ex.
 - Name what you want as long as you add it to configParser
 - Assure to assign a unique attr_id (Attribute ID)
 ex. 
+
 	[sensor_doorswitch]
 	enable = false
 	attr_id = 2
@@ -297,8 +301,9 @@ ex.
 *Step 3)* Add get Enabled Sensors = Handler of parsing configuration file getting actual sensors
 
 ex.
-	def getEnabledSensors(configObject, logObject=None):
 
+	def getEnabledSensors(configObject, logObject=None):
+	....
 	if configObject.get('sensor_motionpir', 'enable') == 'true':
 	    pin = configObject.get('sensor_motionpir', 'pin')
 	    # interval = configObject.get('sensor_motionpir', 'interval')
@@ -309,9 +314,11 @@ ex.
 
 *Step 4)* Updating TriggerQueue Handler = Responsible for adding (incoming) “alerts” in queue into Database
 
-	class triggerQueueHandler(threading.Thread):
 
 ex.
+
+	class triggerQueueHandler(threading.Thread):
+	...
 	print edoGetDateTime() + ": Handling trigger in queue " + str(trigger)
 	if attr_id == 1:
 	    # Motion Pir
@@ -328,9 +335,11 @@ ex.
 
 *Step 5)* Updating SensorCheck Handler = When sensor enabled, this class responsible for starting the thead for this check
 
-	class sensorCheck(threading.Thread):
 
 ex. 
+
+	class sensorCheck(threading.Thread):
+	...
 	# Start Loop
 	for sensor in self.sensorList:
 	    # Handler for PIR MOTION
