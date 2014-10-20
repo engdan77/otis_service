@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141018.1114 $"
+__version__ = "$Revision: 20141020.1115 $"
 
 import sys
 import threading
@@ -2094,7 +2094,10 @@ class Luxmeter:
             ambient *= 16    # scale 1x to 16x
             IR *= 16         # scale 1x to 16x
 
-        ratio = (IR / float(ambient))  # changed to make it run under python
+        try:
+            ratio = (IR / float(ambient))  # changed to make it run under python
+        except ZeroDivisionError:
+            ratio = 0
 
         if (self.debug):
                 print "IR Result", IR
@@ -2148,6 +2151,8 @@ class edoLuxMeter(threading.Thread):
         self.running = True
         # Get initial status and supply to queue
         self.value = int(self.luxmeter.getLux())
+        if self.value > 50:
+            self.value = 50
 
         epoch = int(time.time())
         self.queue.put((epoch, self.value))
@@ -2155,6 +2160,8 @@ class edoLuxMeter(threading.Thread):
         while self.running:
             # Get new value
             new_value = int(self.luxmeter.getLux())
+            if new_value > 50:
+                new_value = 50
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
                     self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))
