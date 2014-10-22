@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141020.1115 $"
+__version__ = "$Revision: 20141022.1115 $"
 
 import sys
 import threading
@@ -310,6 +310,8 @@ class edoClassDB():
             Example: object.update('table1', {col1: 'value1'}, {col2: 'value'})
             Example: object.update('table1', 10, {col2: 'value'})
         '''
+        import time
+
         if self.dbtype == 'sqlite':
             import sqlite3
             connection = sqlite3.connect(self.dbconnect)
@@ -317,7 +319,25 @@ class edoClassDB():
         elif self.dbtype == 'mysql':
             import MySQLdb
             host, port, user, passwd, db = self.dbconnect
-            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+
+            try:
+                connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+            except:
+                if self.oLogger:
+                    self.oLogger.log('Could not store data to database, wating 30 sec to re-attempt ' + configfile, 'ERROR')
+                else:
+                    print "Could not store data to database, waiting 30 sec for re-attempt"
+                time.sleep(30)
+                try:
+                    connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+                except:
+                    if self.oLogger:
+                        self.oLogger.log('Could not store data to database, skipping' + configfile, 'ERROR')
+                    else:
+                        print "Could not store data to database, skipping"
+                return "Fail"
+
+            # Successfully connected
             if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
 
         cursor = connection.cursor()
