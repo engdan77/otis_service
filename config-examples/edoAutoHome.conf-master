@@ -39,6 +39,15 @@ from = xxx@gmail.com
 to = xxx@xxx
 cameras = camera_hall
 
+[alarm_sms]
+enable = true
+trigger_when = [{"dev": 1, "attr": 1, "data": "=Motion"}]
+sms_incoming_cmd = '{'hallo': 'ls'}'
+sms_number = '+46704586564'
+sms_port = 3001
+sms_tty = /dev/tty.HUAWEIMobile-Modem
+sms_check_int = 10
+
 [camera_1]
 name = hall
 enable = true
