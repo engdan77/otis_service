@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141018.424 $"
+__version__ = "$Revision: 20141116.451 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -178,6 +178,31 @@ class triggerListener():
         self.server_thread.daemon = True
         self.server_thread.start()
         print "TriggerListener loop running in thread:", self.server_thread.name
+
+    def stop(self):
+        self.server.shutdown()
+
+
+class smsListener():
+    ''' Daemon used for listening for request to send SMS '''
+    def __init__(self, port, **kwargs):
+        print "debug4: %s" % (kwargs,)
+        self.m = kwargs.get('dongle', None)
+        self.host = '0.0.0.0'
+        self.port = int(port)
+
+    def start(self):
+        # Extend edoThreadedTCPServer with queue
+        self.server = edoDongleTCPServer((self.host, self.port), edoDongleTCPRequestHandler, self.m)
+
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        self.server_thread = threading.Thread(target=self.server.serve_forever)
+
+        # Exit the server thread when the main thread terminates
+        self.server_thread.daemon = True
+        self.server_thread.start()
+        print "smsListener loop running in thread:", self.server_thread.name
 
     def stop(self):
         self.server.shutdown()
@@ -490,6 +515,19 @@ def startLoop(mode='client', queue=None, **kwargs):
     else:
         triggerQueue = queue
 
+    '''
+    # Start SMS service if enabled
+    sms_tty = kwargs.get('sms_tty', '/dev/tty.HUAWEIMobile-Modem')
+    sms_incoming_cmd = kwargs.get('sms_incoming_cmd', None)
+    sms_port = kwargs,get('sms_port', 3001)
+    sms_check_int = kwargs.get('sms_check_int', 10)
+    sms_enable = kwargs.get('sms_enable', 'False')
+    if sms_enable == 'True':
+        modemObject = edoModemDongle(tty=sms_tty, check_int=sms_check_int, incoming_cmd=sms_incoming_cmd)
+        objSMSListener = smsListener(sms_port, dongle=modemObject)
+        objSMSListener.start()
+    '''
+
     # Start triggerListener (for incoming events to trigger actions)
     objTriggerListener = triggerListener(listen_port, triggerQueue)
     objTriggerListener.start()
@@ -611,6 +649,20 @@ class edoGmailAlarm(edoGmail):
         print edoGetDateTime() + ": Stopping gmail"
 
 
+class edoSMSAlarm(edoModemDongle):
+    ''' Inherit and add new property to sendmail '''
+    def __init__(self, *args, **kwargs):
+        edoModemDongle.__init__(self, *args, **kwargs)
+        self.trigger_when = kwargs.get('trigger_when', None)
+        self.number = kwargs.get('number', None)
+
+    def trigger(self, *args, **kwargs):
+        self.send(*args, **kwargs)
+
+    def stop(self):
+        print edoGetDateTime() + ": Stopping SMS"
+
+
 def getEnabledAlarms(configObject, logObject=None):
     ''' configObject as argument, check enables alarms and returns list of alarm-objects '''
     alarms = list()
@@ -627,6 +679,23 @@ def getEnabledAlarms(configObject, logObject=None):
         alarm_gmail.mail_from = configObject.get('alarm_gmail', 'from')
         alarm_gmail.mail_to = configObject.get('alarm_gmail', 'to')
         alarms.append(alarm_gmail)
+    if configObject.get('alarm_sms', 'enable') == 'true':
+        sms_tty = configObject.get('alarm_sms', 'sms_tty')
+        print "debug2: %s" % (sms_tty,)
+        sms_port = configObject.get('alarm_sms', 'sms_port')
+        sms_number = configObject.get('alarm_sms', 'sms_number')
+        sms_check_int = configObject.get('alarm_sms', 'sms_check_int')
+        sms_incoming_cmd = configObject.get('alarm_sms', 'sms_incoming_cmd')
+        sms_trigger_when = configObject.get('alarm_sms', 'trigger_when')
+
+        # Create SMS Dongle Object
+        alarm_sms = edoSMSAlarm(tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when)
+        print "debug3: %s" % (alarm_sms,)
+        # Start listening daemon
+        objSMSListener = smsListener(sms_port, dongle=alarm_sms)
+        objSMSListener.start()
+        # Append object to alarms list
+        alarms.append(alarm_sms)
     return alarms
 
 
@@ -1053,6 +1122,7 @@ if __name__ == "__main__":
         if alarm_settings['led'] == 'true':
             objLed.stop()
 
+
         # Stop enabled alarm components
         if main_settings['mode'] == 'server':
             for alarm in AlarmDevList:
@@ -1061,15 +1131,3 @@ if __name__ == "__main__":
         # Stop enabled cameras
         for camera in cameras:
             camera.stop()
-
-        # Start triggerListener
-        #triggerListener = triggerListener(3000, triggerQueue)
-        #triggerListener.start()
-        # Start triggerHandler
-        #triggerQueueHandler = triggerQueueHandler(triggerQueue)
-        #triggerQueueHandler.start()
-        # Start sensorCheck
-        #sensorCheck = sensorCheck(triggerQueue, ['blah'])
-        #sensorCheck.start()
-        # TESTING i Testing from Pi
-        # TESTING MAC

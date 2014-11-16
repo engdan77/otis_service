@@ -4,10 +4,11 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141022.1115 $"
+__version__ = "$Revision: 20141116.1166 $"
 
 import sys
 import threading
+import SocketServer
 
 
 def edoGetDateTime():
@@ -2214,3 +2215,113 @@ class edoLuxMeter(threading.Thread):
                 else:
                     self.all_status.append(switch_status)
         return self.all_status
+
+
+class edoModemDongle(threading.Thread):
+    '''
+    Class object to handle 3G Dongle
+    object = edoSwitch(logObject, tty='/dev/ttyUSB0')
+    object = edoModemDongle(incoming_cmd={'search_for_word_in_sms': 'function_or_external_script_with_rest_as_args'})
+    '''
+    def __init__(self, loggerObject=None, **kwargs):
+        threading.Thread.__init__(self)
+        import Queue
+        import sms
+
+        self.objLog = loggerObject
+        self.queue = Queue.Queue()
+        self.running = False
+        self.status = None
+        self.tty = kwargs.get('tty', '/dev/tty.HUAWEIMobile-Modem')
+        self.check_int = kwargs.get('check_int', 10)
+        self.incoming_cmd = kwargs.get('incoming_cmd', None)
+        print "debug1: %s" % (self.tty,)
+
+        # Initiate modem
+        self.m = sms.Modem(self.tty)
+        # Change SMS mode
+        self.m._command('AT+CMGF=1')
+
+    def run(self):
+        import time
+        import re
+        import subprocess
+        self.running = True
+
+        while self.running:
+            # Check if any new incoming SMS
+            msgs = self.m.messages()
+            if len(msgs) > 0:
+                for sms in msgs:
+                    if self.objLog:
+                        self.objLog.log('Incoming SMS from %s with body: %s' % (sms.number, sms.text), 'INFO')
+                    else:
+                        print 'Incoming SMS from %s with body: %s' % (sms.number, sms.text)
+
+                    # Handle incoming sms
+                    for key in self.incoming_cmd.keys():
+                        cmd = self.incoming_cmd[key]
+                        if re.search("^%s\s*(.*)" % (key,), sms.text):
+                            args = re.search("^%s\s*(.*)" % (key,), sms.text).groups()[0]
+                            print 'Found string "%s" in SMS' % (key,)
+                            # Check if function
+                            try:
+                                exec('cmd_func = %s' % (cmd,))
+                            except:
+                                cmd_func = None
+                            if callable(cmd_func):
+                                print "Command is existing function, calling %s with args: %s" % (cmd, args)
+                                result = cmd_func(args)
+                                self.send(sms.number, str(result))
+                            else:
+                                print "No function, trying to call external script %s" % (cmd,)
+                                try:
+                                    result = subprocess.Popen('%s' % (cmd,), stdout=subprocess.PIPE).stdout.read()
+                                    self.send(sms.number, str(result))
+                                except:
+                                    print "Could not find function nor external script - skip"
+                    print "Deleting message"
+                    sms.delete()
+
+            # Send any messages in queue
+            if self.queue.qsize() > 0:
+                number, message = self.queue.get()
+                print number
+                print message
+                self.m.send(number, message)
+
+            # Pause for next poll
+            time.sleep(self.check_int)
+
+    def stop(self):
+        self.running = False
+
+    def send(self, number, message):
+        ''' Add sms message to send '''
+        self.queue.put((number, message))
+
+
+
+class edoDongleTCPRequestHandler(SocketServer.BaseRequestHandler):
+    ''' BaseRequestHandler uses TCPserver and does the actual work '''
+    def handle(self):
+        data = self.request.recv(1024)
+
+        # Check if json
+        try:
+            data = json.loads(data)
+        except Exception:
+            pass
+        else:
+            self.server.dongle.send(data)
+            print(edoGetDateTime() + ": Sending SMS - " + str(data))
+
+        response = "ok"
+        self.request.sendall(response)
+
+
+class edoDongleTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    def __init__(self, server_address, RequestHandlerClass, dongleObject):
+        ''' Extend init to handle Dongle object '''
+        self.dongle = dongleObject
+        SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
