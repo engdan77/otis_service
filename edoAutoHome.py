@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141116.451 $"
+__version__ = "$Revision: 20141119.454 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -848,18 +848,21 @@ def checkDeviceCondition(objDB, argDevice, argAttr, argData):
         return False
 
 
-def send_reset_all_clients():
+def send_reset_all_clients(AlarmList, conf):
     ''' Function to send reset_all to all clients '''
-    print "debug1"
-    print alarm_settings
-    print alarm_settings.get('clients_ip', None)
-    print type(alarm_settings.get('clients_ip', None))
     import json
     ips = json.loads(alarm_settings.get('clients_ip', None))
     print edoGetDateTime() + ": Send Reset Sensors - " + str(ips)
     if len(ips) > 0:
         for ip, port in ips:
             triggerEvent(str(ip), int(port), 'reset_all_sensors')
+            result = edoTestSocket(ip, port, logObject)
+            if result == 1:
+                for AlarmDev in AlarmList:
+                    if AlarmDev.__class__.__name__ is "edoBuzzer" and conf.get('alarm_buzzer', 'enable') == 'true':
+                        print edoGetDateTime() + ": Client %s could not be reached" % (ip,)
+                        logObject.log("Client %s could not be reached" % (ip,), 'DEBUG')
+                        AlarmDev.buzz_on(5)
 
 
 class alarmClass():
@@ -892,7 +895,7 @@ class alarmClass():
                 self.objLed.blink()
             # Send reset to all clients sensors to get alarm if currently
             # active
-                send_reset_all_clients()
+                send_reset_all_clients(AlarmDevList, self.objConfig)
 
         elif all(result) is False and self.active is True:
             print edoGetDateTime() + ": Alarm disarmed"
