@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141116.1166 $"
+__version__ = "$Revision: 20141231.1171 $"
 
 import sys
 import threading
@@ -267,39 +267,45 @@ class edoClassDB():
         elif self.dbtype == 'mysql':
             import MySQLdb
             host, port, user, passwd, db = self.dbconnect
-            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
-            if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
-
-        cursor = connection.cursor()
-
-        # If the values is list
-        if type(values) is list:
-            # Create sql_statement
-            if len(values) > 0:
-                sql_statement = "?"
-                for i in range(len(values) - 1):
-                    sql_statement = sql_statement + ",?"
-                sql_statement = "INSERT INTO " + table + " VALUES (NULL, " + sql_statement + ");"
+            try:
+                connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+            except MySQLdb.OperationalError as e:
+                print "Error connecting to database %s" (str(e),)
+                db_error = True
             else:
-                sys.stderr.write("Missing values for insert into SQL")
+                if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
 
-        # if the values is dict
-        if type(values) is dict:
-            # Iterate through the rest of values
-            for i, k in enumerate(values.keys(), start=0):
-                if i == 0:
-                    columns = k
-                    vals = "'" + str(values[k]) + "'"
+        if not db_error:
+            cursor = connection.cursor()
+
+            # If the values is list
+            if type(values) is list:
+                # Create sql_statement
+                if len(values) > 0:
+                    sql_statement = "?"
+                    for i in range(len(values) - 1):
+                        sql_statement = sql_statement + ",?"
+                    sql_statement = "INSERT INTO " + table + " VALUES (NULL, " + sql_statement + ");"
                 else:
-                    columns = columns + ", " + k
-                    vals = vals + ", '" + str(values[k]) + "'"
-                sql_statement = "INSERT INTO " + table + "(" + columns + ") VALUES (" + vals + ");"
+                    sys.stderr.write("Missing values for insert into SQL")
 
-        if self.oLogger: self.oLogger.log(sql_statement, 'DEBUG')
-        cursor.execute(sql_statement)
-        connection.commit()
-        connection.close()
-        if self.oLogger: self.oLogger.log('Closing database connection')
+            # if the values is dict
+            if type(values) is dict:
+                # Iterate through the rest of values
+                for i, k in enumerate(values.keys(), start=0):
+                    if i == 0:
+                        columns = k
+                        vals = "'" + str(values[k]) + "'"
+                    else:
+                        columns = columns + ", " + k
+                        vals = vals + ", '" + str(values[k]) + "'"
+                    sql_statement = "INSERT INTO " + table + "(" + columns + ") VALUES (" + vals + ");"
+
+            if self.oLogger: self.oLogger.log(sql_statement, 'DEBUG')
+            cursor.execute(sql_statement)
+            connection.commit()
+            connection.close()
+            if self.oLogger: self.oLogger.log('Closing database connection')
 
     def update(self, table, condition, values):
         '''
@@ -325,7 +331,7 @@ class edoClassDB():
                 connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
             except:
                 if self.oLogger:
-                    self.oLogger.log('Could not store data to database, wating 30 sec to re-attempt ' + configfile, 'ERROR')
+                    self.oLogger.log('Could not store data to database, wating 30 sec to re-attempt ', 'ERROR')
                 else:
                     print "Could not store data to database, waiting 30 sec for re-attempt"
                 time.sleep(30)
@@ -333,7 +339,7 @@ class edoClassDB():
                     connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
                 except:
                     if self.oLogger:
-                        self.oLogger.log('Could not store data to database, skipping' + configfile, 'ERROR')
+                        self.oLogger.log('Could not store data to database, skipping', 'ERROR')
                     else:
                         print "Could not store data to database, skipping"
                 return "Fail"
@@ -2301,10 +2307,11 @@ class edoModemDongle(threading.Thread):
         self.queue.put((number, message))
 
 
-
 class edoDongleTCPRequestHandler(SocketServer.BaseRequestHandler):
     ''' BaseRequestHandler uses TCPserver and does the actual work '''
     def handle(self):
+        import json
+
         data = self.request.recv(1024)
 
         # Check if json
