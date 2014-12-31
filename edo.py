@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141231.1171 $"
+__version__ = "$Revision: 20141231.1172 $"
 
 import sys
 import threading
@@ -259,7 +259,7 @@ class edoClassDB():
         Example: object.insert('table1', ('value1',))
         Example: object.insert('table1', {col1: 'value1', col2: 'value2')
         '''
-
+        db_error = False
         if self.dbtype == 'sqlite':
             import sqlite3
             connection = sqlite3.connect(self.dbconnect)
@@ -275,7 +275,7 @@ class edoClassDB():
             else:
                 if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
 
-        if not db_error:
+        if not db_error is True:
             cursor = connection.cursor()
 
             # If the values is list
