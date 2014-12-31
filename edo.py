@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141231.1172 $"
+__version__ = "$Revision: 20141231.1177 $"
 
 import sys
 import threading
@@ -270,7 +270,8 @@ class edoClassDB():
             try:
                 connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
             except MySQLdb.OperationalError as e:
-                print "Error connecting to database %s" (str(e),)
+                print "Error connecting to database - insert"
+                print e
                 db_error = True
             else:
                 if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
@@ -397,8 +398,14 @@ class edoClassDB():
         elif self.dbtype == 'mysql':
             import MySQLdb
             host, port, user, passwd, db = self.dbconnect
-            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
-            if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
+            try:
+                connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+            except MySQLdb.OperationalError as e:
+                print "Could not access database - select"
+                print e
+                return None
+            else:
+                if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
 
         cursor = connection.cursor()
 
