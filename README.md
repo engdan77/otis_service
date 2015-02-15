@@ -111,6 +111,7 @@ Currently Support Sensors and Units
 * DHT11 - https://learn.adafruit.com/dht
 * MQ2 -  http://www.seeedstudio.com/depot/datasheet/MQ-2.pdf
 * TSL2561 - https://learn.adafruit.com/tsl2561
+* 2G/3G Dongle - Send alerts by SMS (tested using Huawei E392)
 
 -------------------------
 Planned Support Sensors and Units
@@ -119,7 +120,6 @@ Planned Support Sensors and Units
 * Foscam Wifi Webcam - http://foscam.us/foscam-fi8918w-wireless-ip-camera-11.html
 * TellStick Duo - http://www.telldus.se/products/tellstick_duo
 * TellStick Temperature Sensors - http://www.clasohlson.com/se/Ekstra-temperaturgiver-hygrometer/Pr365123000
-* 2G/3G Dongle - to support SMS
 
 
 -------------------------
