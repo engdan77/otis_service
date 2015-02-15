@@ -21,6 +21,51 @@ As a front-end use a framework such as Web2Py
 
 
 ----------------------
+Installing the dependencies and edoAutoHome
+----------------------
+```
+
+[Make placeholder for modules]
+# mkdir git
+# cd git
+
+[Download edoAutoHome]
+# git clone https://github.com/engdan77/edoautohome.git
+
+[Install MySQLdb]
+# apt-get install python-mysqldb
+
+[Install wiringpi2 and spidev]
+# git clone git://git.drogon.net/wiringPi
+# cd wiringPi
+# ./build
+# cd ..
+
+# apt-get install python-dev python-imaging python-imaging-tk python-pip
+# pip install wiringpi
+# pip install wiringpi2
+
+The program we will use require spidev to be activated. The kernel module should then be activated. To do so, comment the line blacklist spi-bcm2708 by adding a heading # in the file /etc/modprobe.d/raspi-blacklist.conf then reboot the Raspberry Pi to activate this module.
+
+# pip install spidev
+
+[Installing Adafruit's Raspberry-Pi Python Code Library]
+# apt-get install python-smbus
+# git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
+# cp Adafruit-Raspberry-Pi-Python-Code/Adafruit_I2C/Adafruit_I2C.py edoautohome/
+
+[Install modile for piCamera]
+# apt-get install python-picamera
+
+[Installing module for pcd8544 LCD display]
+# git clone https://github.com/XavierBerger/pcd8544.git
+# cd pcd8544
+# ./setup.py clean build 
+# sudo ./setup.py install
+# cd ..
+```
+
+----------------------
 Command Line Arguments
 ----------------------
 
