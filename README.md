@@ -65,6 +65,9 @@ The program we will use require spidev to be activated. The kernel module should
 # cd ..
 ```
 
+[Installing Web-frontend - Optionally]
+Read instructions found at https://github.com/engdan77/edoWeb
+
 ----------------------
 Command Line Arguments
 ----------------------
@@ -477,6 +480,9 @@ Data Model
 -------------------------
 Pictures
 -------------------------
+*Example of current status of sensors - based on edoWeb*
+![Sensors](https://github.com/engdan77/edoWeb/blob/master/pics/edoWeb_sensors.png)
+
 *Main Board based on RaspberryPI, NokiaLCD, PIR-sensor and Magnetic Door Switch*
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_1_MainBoard.jpg)
 
