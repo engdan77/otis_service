@@ -19,7 +19,7 @@ Some of the thoughts that I've had in mind when starting this have been
 
 As a front-end use a framework such as Web2Py
 
-![Use-Case](https://github.com/engdan77/edoWeb/blob/master/pics/use_case.jpg)
+![Use-Case](https://github.com/engdan77/edoautohome/blob/master/pics/use_case.jpg)
 
 
 ----------------------
