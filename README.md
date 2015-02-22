@@ -63,10 +63,10 @@ The program we will use require spidev to be activated. The kernel module should
 # ./setup.py clean build 
 # sudo ./setup.py install
 # cd ..
-```
 
 [Installing Web-frontend - Optionally]
 Read instructions found at https://github.com/engdan77/edoWeb
+```
 
 ----------------------
 Command Line Arguments
