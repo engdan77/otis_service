@@ -133,6 +133,10 @@ Eventually built the device to be kept in the livingroom with majority of the th
  * Tweaks made to Current Meter class to fix false alerts
  * Classed developed for DHT11, MQ2 and TSL2561 creating threads for monitoring
 
+**2015-02-26**
+Now I've finalised the SMS-functionality that currently been tested with Huawei E392, that also supports incoming sms to trigger developed function or bash-command and return its result back as SMS.
+I've also included to github the edoWeb-project that includes a web-frontend based on Web2Py framework and PyGal for drawing graphs, see further down for details.
+
 
 -------------------------
 Keywords
