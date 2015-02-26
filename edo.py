@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20141231.1177 $"
+__version__ = "$Revision: 20150226.1192 $"
 
 import sys
 import threading
@@ -2233,22 +2233,27 @@ class edoLuxMeter(threading.Thread):
 class edoModemDongle(threading.Thread):
     '''
     Class object to handle 3G Dongle
-    object = edoSwitch(logObject, tty='/dev/ttyUSB0')
+    object = edoModemDongle(logObject, tty='/dev/ttyUSB0')
     object = edoModemDongle(incoming_cmd={'search_for_word_in_sms': 'function_or_external_script_with_rest_as_args'})
     '''
     def __init__(self, loggerObject=None, **kwargs):
         threading.Thread.__init__(self)
         import Queue
         import sms
+        import ast
 
         self.objLog = loggerObject
         self.queue = Queue.Queue()
         self.running = False
         self.status = None
-        self.tty = kwargs.get('tty', '/dev/tty.HUAWEIMobile-Modem')
-        self.check_int = kwargs.get('check_int', 10)
-        self.incoming_cmd = kwargs.get('incoming_cmd', None)
-        print "debug1: %s" % (self.tty,)
+        # self.tty = kwargs.get('tty', '/dev/tty.HUAWEIMobile-Modem')
+        self.tty = kwargs.get('tty', '/dev/ttyUSB0')
+        self.check_int = int(kwargs.get('check_int', 10))
+        self.incoming_cmd = kwargs.get('incoming_cmd', {})
+
+        # Change string to dict if required
+        if type(self.incoming_cmd) is str:
+            self.incoming_cmd = ast.literal_eval(self.incoming_cmd)
 
         # Initiate modem
         self.m = sms.Modem(self.tty)
@@ -2259,7 +2264,12 @@ class edoModemDongle(threading.Thread):
         import time
         import re
         import subprocess
+        from datetime import datetime
+        import _strptime
         self.running = True
+
+        # Bugfix
+        datetime.strptime('2012-01-01', '%Y-%m-%d')
 
         while self.running:
             # Check if any new incoming SMS
@@ -2272,6 +2282,7 @@ class edoModemDongle(threading.Thread):
                         print 'Incoming SMS from %s with body: %s' % (sms.number, sms.text)
 
                     # Handle incoming sms
+                    print "Checking incoming SMS against rules %s" % (str(self.incoming_cmd),)
                     for key in self.incoming_cmd.keys():
                         cmd = self.incoming_cmd[key]
                         if re.search("^%s\s*(.*)" % (key,), sms.text):
@@ -2285,12 +2296,12 @@ class edoModemDongle(threading.Thread):
                             if callable(cmd_func):
                                 print "Command is existing function, calling %s with args: %s" % (cmd, args)
                                 result = cmd_func(args)
-                                self.send(sms.number, str(result))
+                                self.send(sms.number, str(result).encode('ascii', 'replace')[:160])
                             else:
                                 print "No function, trying to call external script %s" % (cmd,)
                                 try:
                                     result = subprocess.Popen('%s' % (cmd,), stdout=subprocess.PIPE).stdout.read()
-                                    self.send(sms.number, str(result))
+                                    self.send(sms.number, str(result).encode('ascii', 'replace')[:160])
                                 except:
                                     print "Could not find function nor external script - skip"
                     print "Deleting message"
