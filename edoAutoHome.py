@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20141119.454 $"
+__version__ = "$Revision: 20150226.466 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -184,9 +184,8 @@ class triggerListener():
 
 
 class smsListener():
-    ''' Daemon used for listening for request to send SMS '''
+    ''' Daemon used for listening for request to send SMS - not used yet '''
     def __init__(self, port, **kwargs):
-        print "debug4: %s" % (kwargs,)
         self.m = kwargs.get('dongle', None)
         self.host = '0.0.0.0'
         self.port = int(port)
@@ -681,8 +680,7 @@ def getEnabledAlarms(configObject, logObject=None):
         alarms.append(alarm_gmail)
     if configObject.get('alarm_sms', 'enable') == 'true':
         sms_tty = configObject.get('alarm_sms', 'sms_tty')
-        print "debug2: %s" % (sms_tty,)
-        sms_port = configObject.get('alarm_sms', 'sms_port')
+        ## sms_port = configObject.get('alarm_sms', 'sms_port')
         sms_number = configObject.get('alarm_sms', 'sms_number')
         sms_check_int = configObject.get('alarm_sms', 'sms_check_int')
         sms_incoming_cmd = configObject.get('alarm_sms', 'sms_incoming_cmd')
@@ -690,10 +688,11 @@ def getEnabledAlarms(configObject, logObject=None):
 
         # Create SMS Dongle Object
         alarm_sms = edoSMSAlarm(tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when)
-        print "debug3: %s" % (alarm_sms,)
-        # Start listening daemon
-        objSMSListener = smsListener(sms_port, dongle=alarm_sms)
-        objSMSListener.start()
+        alarm_sms.start()
+        print "Starting SMS engine thread: %s" % (str(alarm_sms),)
+        # Start listening daemon - experimental
+        ## objSMSListener = smsListener(sms_port, dongle=alarm_sms)
+        ## objSMSListener.start()
         # Append object to alarms list
         alarms.append(alarm_sms)
     return alarms
@@ -928,6 +927,15 @@ class alarmClass():
                         AlarmDev.trigger(AlarmDev.mail_to, "HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData), mail_body, cam_shots)
                         # Upload pictrues to FTP
                         uploadAllCameras(cameras)
+                if AlarmDev.__class__.__name__ is "edoSMSAlarm":
+                    sms_body = edoGetDateTime() + ": " + str(argData)
+                    if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
+                        dev_name = get_dev_name(argDev, self.objDB)
+                        attr_name = get_attr_name(argAttr, self.objDB)
+                        print edoGetDateTime() + ": SMS Alarm Sent, " + dev_name + ", " + attr_name
+                        logObject.log("Alarm SMS sent, " + dev_name + ", " + attr_name, 'INFO')
+                        # Send sms
+                        AlarmDev.trigger(AlarmDev.number, sms_body + "..HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData))
                     # Feed event and have mail sent if true
                     # AlarmDev.trigger(self.objDB, argDev, argAttr, argData)
 
@@ -1124,7 +1132,6 @@ if __name__ == "__main__":
         # End led
         if alarm_settings['led'] == 'true':
             objLed.stop()
-
 
         # Stop enabled alarm components
         if main_settings['mode'] == 'server':
