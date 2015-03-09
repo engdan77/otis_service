@@ -263,6 +263,65 @@ button: if button is installed on mainboard - see schematics
 listen_port: this is the TCP-port that the software listens for incoming events (master for get updates from clients, clients to retieve "update_me" event from master)
 mode: could either be "server" or "client"
 
+	[sensor_power]
+	enable = false
+	adc_in = 0
+	minref = 510
+	clockpin = 18
+	mosipin = 24
+	misopin = 23
+	cspin = 25
+	sleep_int = 0.00001
+	attr_id = 3
+	limit = 30
+	debug = false
+	interval = 1
+
+This sections defined the "non-intrusive current meter" currently attached to my stove at home, you may have to tweak the minref to get the proper values. The other parameters defined which pins you've attached the MCP3008 to (ADC).
+
+	[sensor_dht11_humid]
+	enable = true
+	limit = 2
+	type = 0
+	pin = 4
+	check_int = 10
+	attr_id = 4
+
+	[sensor_dht11_temp]
+	enable = true
+	limit = 1
+	type = 1
+	pin = 4
+	check_int = 10
+	attr_id = 5
+
+DHT11 is a combined humid/temp sensor.
+
+	[sensor_mq2]
+	enable = true
+	adc_in = 0
+	clockpin = 18
+	mosipin = 24
+	misopin = 23
+	cspin = 25
+	sleep_int = 1
+	limit = 3
+	sleep_int = 1
+	pause_int = 10
+	check_int = 1
+	attr_id = 6
+	debug = false
+
+The configuration for the MQ2-sensor (smoke detection) connected through a MCP3008 (ADC) and is basically the same configuration as for the above power-meter.
+
+	[sensor_luxmeter]
+	enable = true
+	limit=5
+	check_int = 10
+	attr_id = 7
+
+Configuration for the lux/brightness-meter that would indicate when it gets bright/dark.
+
 
 -------------------------
 Trigger/Activate Definition
