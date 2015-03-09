@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150226.466 $"
+__version__ = "$Revision: 20150309.466 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -621,12 +621,12 @@ def checkEventInTrigger((argDevice, argAttr, argData), trigger_json):
             else:
                 result.append(False)
         if current_cond['data'][0] == '>':
-            if int(current_cond['dev']) == int(argDevice) and int(current_cond['attr']) == int(argAttr) and int(argData) > int(current_cond['data'][1:]):
+            if int(current_cond['dev']) == int(argDevice) and int(current_cond['attr']) == int(argAttr) and float(argData) > float(current_cond['data'][1:]):
                 result.append(True)
             else:
                 result.append(False)
         if current_cond['data'][0] == '<':
-            if int(current_cond['dev']) == int(argDevice) and int(current_cond['attr']) == int(argAttr) and int(argData) < int(current_cond['data'][1:]):
+            if int(current_cond['dev']) == int(argDevice) and int(current_cond['attr']) == int(argAttr) and float(argData) < float(current_cond['data'][1:]):
                 result.append(True)
             else:
                 result.append(False)
