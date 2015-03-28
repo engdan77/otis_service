@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20150226.1192 $"
+__version__ = "$Revision: 20150328.1226 $"
 
 import sys
 import threading
@@ -2250,6 +2250,7 @@ class edoModemDongle(threading.Thread):
         self.tty = kwargs.get('tty', '/dev/ttyUSB0')
         self.check_int = int(kwargs.get('check_int', 10))
         self.incoming_cmd = kwargs.get('incoming_cmd', {})
+        self.functions = kwargs.get('functions', None)
 
         # Change string to dict if required
         if type(self.incoming_cmd) is str:
@@ -2280,23 +2281,37 @@ class edoModemDongle(threading.Thread):
                         self.objLog.log('Incoming SMS from %s with body: %s' % (sms.number, sms.text), 'INFO')
                     else:
                         print 'Incoming SMS from %s with body: %s' % (sms.number, sms.text)
-
                     # Handle incoming sms
+                    if self.objLog:
+                        self.objLog.log("Checking incoming SMS against rules %s" % (str(self.incoming_cmd),), 'INFO')
                     print "Checking incoming SMS against rules %s" % (str(self.incoming_cmd),)
                     for key in self.incoming_cmd.keys():
                         cmd = self.incoming_cmd[key]
                         if re.search("^%s\s*(.*)" % (key,), sms.text):
                             args = re.search("^%s\s*(.*)" % (key,), sms.text).groups()[0]
+                            if self.objLog:
+                                self.objLog.log('Found string "%s" in SMS' % (key,), 'INFO')
                             print 'Found string "%s" in SMS' % (key,)
                             # Check if function
-                            try:
-                                exec('cmd_func = %s' % (cmd,))
-                            except:
-                                cmd_func = None
+                            cmd_func = cmd
+                            if cmd_func in self.functions.keys():
+                                print "Found %s in list of passed functions" % (cmd_func,)
+                                cmd_func = self.functions[cmd_func]
                             if callable(cmd_func):
                                 print "Command is existing function, calling %s with args: %s" % (cmd, args)
-                                result = cmd_func(args)
-                                self.send(sms.number, str(result).encode('ascii', 'replace')[:160])
+                                args = args.split(",")
+                                # Might add arguments in the future
+                                result = cmd_func()
+                                if self.objLog:
+                                    self.objLog.log('Sending message to %s with body: %s' % (sms.number, str(result)), 'INFO')
+                                else:
+                                    print 'Sending SMS to %s with body: %s' % (sms.number, str(result)[:50])
+
+                                self.send(sms.number, str(result)[:160])
+                                if len(result) > 160:
+                                    self.send(sms.number, str(result)[160:][:160])
+                                    if len(result) > 320:
+                                        self.send(sms.number, str(result)[320:][:160])
                             else:
                                 print "No function, trying to call external script %s" % (cmd,)
                                 try:
@@ -2304,14 +2319,17 @@ class edoModemDongle(threading.Thread):
                                     self.send(sms.number, str(result).encode('ascii', 'replace')[:160])
                                 except:
                                     print "Could not find function nor external script - skip"
-                    print "Deleting message"
+                    if self.objLog:
+                        self.objLog.log('Deleting message', 'INFO')
+                    else:
+                        print 'Deleting message'
                     sms.delete()
 
             # Send any messages in queue
             if self.queue.qsize() > 0:
                 number, message = self.queue.get()
-                print number
-                print message
+                if self.objLog:
+                    self.objLog.log('Sending message to %s with message: %s' % (number, message), 'INFO')
                 self.m.send(number, message)
 
             # Pause for next poll
