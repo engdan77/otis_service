@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150309.466 $"
+__version__ = "$Revision: 20150328.490 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -95,6 +95,34 @@ def list_attr_dev(db_ip, db_user, db_pass, db_name, logObject):
         if edoTestSocket(db_ip, 3306, logObject) == 0:
             oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
             result = oDB.select('device_attr', "id > 0")
+            print(result)
+
+
+# def show_status_short(db_ip, db_user, db_pass, db_name, logObject):
+def show_status_short():
+        ''' List current status of sensors  '''
+        from edo import edoTestSocket, edoClassDB
+        db_ip = server_settings['db_ip']
+        db_user = server_settings['db_user']
+        db_pass = server_settings['db_pass']
+        db_name = server_settings['db_name']
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
+        else:
+            result = None
+        info = ""
+        for line in result:
+            info += "%s \"%s\" %s %s\n" % line
+        return info
+
+
+def show_onoff(db_ip, db_user, db_pass, db_name, logObject):
+        ''' List current status of sensors  '''
+        from edo import edoTestSocket, edoClassDB
+        if edoTestSocket(db_ip, 3306, logObject) == 0:
+            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+            result = oDB.sql("SELECT CONCAT(d.location, '-', d.name) as device, a.name as sensor, data, DATE_FORMAT(updated, '%e/%c %H:%i') as last_update FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
             print(result)
 
 
@@ -514,19 +542,6 @@ def startLoop(mode='client', queue=None, **kwargs):
     else:
         triggerQueue = queue
 
-    '''
-    # Start SMS service if enabled
-    sms_tty = kwargs.get('sms_tty', '/dev/tty.HUAWEIMobile-Modem')
-    sms_incoming_cmd = kwargs.get('sms_incoming_cmd', None)
-    sms_port = kwargs,get('sms_port', 3001)
-    sms_check_int = kwargs.get('sms_check_int', 10)
-    sms_enable = kwargs.get('sms_enable', 'False')
-    if sms_enable == 'True':
-        modemObject = edoModemDongle(tty=sms_tty, check_int=sms_check_int, incoming_cmd=sms_incoming_cmd)
-        objSMSListener = smsListener(sms_port, dongle=modemObject)
-        objSMSListener.start()
-    '''
-
     # Start triggerListener (for incoming events to trigger actions)
     objTriggerListener = triggerListener(listen_port, triggerQueue)
     objTriggerListener.start()
@@ -659,6 +674,7 @@ class edoSMSAlarm(edoModemDongle):
         self.send(*args, **kwargs)
 
     def stop(self):
+        edoModemDongle.stop(self)
         print edoGetDateTime() + ": Stopping SMS"
 
 
@@ -687,7 +703,7 @@ def getEnabledAlarms(configObject, logObject=None):
         sms_trigger_when = configObject.get('alarm_sms', 'trigger_when')
 
         # Create SMS Dongle Object
-        alarm_sms = edoSMSAlarm(tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when)
+        alarm_sms = edoSMSAlarm(logObject, tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when, functions={'show_status_short': show_status_short})
         alarm_sms.start()
         print "Starting SMS engine thread: %s" % (str(alarm_sms),)
         # Start listening daemon - experimental
@@ -955,6 +971,8 @@ if __name__ == "__main__":
     parser.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
     parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
     parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
+    parser.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
+    parser.add_argument("--show_onoff", help="Return 0 if on, 1 if off", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1043,6 +1061,16 @@ if __name__ == "__main__":
                     server_settings['db_pass'],
                     server_settings['db_name'],
                     attr_id, dev_id, logObject)
+
+    if args.show_status_short:
+        print show_status_short()
+
+    if args.show_onoff:
+        # List status of current sesnors status in short format
+        result = show_onoff(server_settings['db_ip'],
+                            server_settings['db_user'],
+                            server_settings['db_pass'],
+                            server_settings['db_name'], logObject)
 
     if args.start:
         # Get list of cameras
