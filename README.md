@@ -66,6 +66,9 @@ The program we will use require spidev to be activated. The kernel module should
 # sudo ./setup.py install
 # cd ..
 
+[Installing memcached - optionally for SMS-gateway]
+# sudo apt-get install memcached
+
 [Installing Web-frontend - Optionally]
 Read instructions found at https://github.com/engdan77/edoWeb
 ```
@@ -322,6 +325,27 @@ The configuration for the MQ2-sensor (smoke detection) connected through a MCP30
 
 Configuration for the lux/brightness-meter that would indicate when it gets bright/dark.
 
+	[alarm_sms]
+	enable = true
+	trigger_when = [{"dev": 3, "attr": 1, "data": "=Motion"},{"dev": 3, "attr": 4, "data": ">40"},{"dev": 3, "attr": 5, "data": ">33"},{"dev": 2, "attr": 3, "data": ">10"}]
+	sms_incoming_cmd = {'files': 'ls', 'status': 'show_status_short'}
+	sms_number = 070xxxxxxx
+	sms_port = 3001
+	sms_tty = /dev/ttyUSB0
+	sms_check_int = 10
+
+SMS configuration for those with Huawei 3G/4G dongles (such as E392) and like to use this to get informed when a sensor reaches its threshold or being able to recieve SMS-text with keyword "status" to send sensor-status back in return.
+trigger_when: Used to define which sensors and what threshold/keyword needs to be matched to send this alert as SMS
+sms_incoming_cmd: {'sms-keyword receieved': 'python function / external bash-command'}
+sms_number: The number to whom you would send the messages to
+sms_port: For future use building a TCP-socket server to listen for SMS to send
+sms_tty: Determine which device the USB dongle listens to
+sms_check_int: The interval which the SMS-listener polls queue
+
+Hints: 
+To test Huawei modem in advance you could install "gammu" for Linux and test as 'echo "All your base are belong to us" | gammu sendsms TEXT 0704xxxx'
+Some modems such as E392 is recognized as mass-storage device, this could be solved by installing "usb_modeswitch" and use it as 'usb_modeswitch -c /usr/share/usb_modeswitch/12d1\:1505 -v 12d1 -p 1505 -W'
+
 
 -------------------------
 Trigger/Activate Definition
@@ -527,6 +551,48 @@ Example of Output
 	2014-08-13 07:18:47: Recieved - {"data": [[1407907127, 0]], "attr_id": 3, "deviceId": 2, "type_id": 1}                             
 	2014-08-13 07:18:47: Handling trigger in queue {u'attr_id': 3, u'data': [[1407907127, 0]], u'deviceId': 2, u'type_id': 1}          
 	2014-08-13 07:18:49: Handling trigger in queue {'data': [1407907128], 'attr_id': 1, 'deviceId': '1', 'type_id': 1}                 
+
+-------------------------
+Utilise interprocess SMS-gateway
+-------------------------
+
+Because there is a built-in SMS-listener running if enabled in configuration
+
+	[alarm_sms]
+	enable = true
+	sms_number = 070xxxxxxxx
+
+You can then use memcache and creating a 'sms' entry that would be used as queue the SMS-listener
+
+	# Initiate memcache if it exists
+	try:
+	    import memcache
+	except:
+	    print "Please install memcache to support reading status"
+	else:
+	    shared = memcache.Client(['127.0.0.1:11211'], debug=1)
+	    shared.set('sms', ('mobile number', 'SMS message I like to send'))
+
+
+-------------------------
+Adding scheduled job to inform sensor-status by SMS when alarm is armed
+-------------------------
+
+Add entry such as below
+
+	30 1 * * * . $HOME/.profile; cd $HOME/git/edoautohome ; python ./edoAutoHome.py --show_onoff >> /tmp/edoatuohome_cron.log
+
+You may have to adjust the path to the directory where you've downloaded this script to.
+In the above example at 1:30 every night if the alarm is activated (you not being at home) a list of sensors would be sent as sms to defined number in configuration
+
+	30/3 14:39 "5" Lux Solna-livingroom
+	30/3 14:37 "24" Smoke Solna-livingroom
+	30/3 14:37 "Door Close" Door Solna-hall
+	30/3 13:21 "Motion" Motion Solna-livingroom
+	30/3 13:20 "Motion" Motion Solna-hall
+	30/3 01:52 "26.0" Temperature Solna-livingroom
+	28/3 05:13 "1" Stove Solna-kitchen
+	8/2 19:59 "33.0" Humidity Solna-livingroom
 
 -------------------------
 Data Model
