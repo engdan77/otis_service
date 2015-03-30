@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20150328.1226 $"
+__version__ = "$Revision: 20150330.1235 $"
 
 import sys
 import threading
@@ -2241,6 +2241,7 @@ class edoModemDongle(threading.Thread):
         import Queue
         import sms
         import ast
+        import time
 
         self.objLog = loggerObject
         self.queue = Queue.Queue()
@@ -2261,6 +2262,14 @@ class edoModemDongle(threading.Thread):
         # Change SMS mode
         self.m._command('AT+CMGF=1')
 
+        # Initiate memcache if it exists
+        try:
+            import memcache
+        except:
+            print "Please install memcache to support reading status"
+        else:
+            self.shared = memcache.Client(['127.0.0.1:11211'], debug=1)
+
     def run(self):
         import time
         import re
@@ -2273,6 +2282,16 @@ class edoModemDongle(threading.Thread):
         datetime.strptime('2012-01-01', '%Y-%m-%d')
 
         while self.running:
+            # Check if memcache exists and with sms in queue
+            if 'shared' in dir(self):
+                sms_memcache = self.shared.get('sms')
+                if sms_memcache:
+                    number, message = sms_memcache
+                    if self.objLog:
+                        print "Found sms in memcache queue for %s with body %s" % (number, message[:30])
+                    self.send(number, message)
+                    self.shared.set('sms', None)
+
             # Check if any new incoming SMS
             msgs = self.m.messages()
             if len(msgs) > 0:
@@ -2306,12 +2325,7 @@ class edoModemDongle(threading.Thread):
                                     self.objLog.log('Sending message to %s with body: %s' % (sms.number, str(result)), 'INFO')
                                 else:
                                     print 'Sending SMS to %s with body: %s' % (sms.number, str(result)[:50])
-
-                                self.send(sms.number, str(result)[:160])
-                                if len(result) > 160:
-                                    self.send(sms.number, str(result)[160:][:160])
-                                    if len(result) > 320:
-                                        self.send(sms.number, str(result)[320:][:160])
+                                self.send(sms.number, str(result))
                             else:
                                 print "No function, trying to call external script %s" % (cmd,)
                                 try:
@@ -2328,9 +2342,20 @@ class edoModemDongle(threading.Thread):
             # Send any messages in queue
             if self.queue.qsize() > 0:
                 number, message = self.queue.get()
+                # self.m.send(number, message)
                 if self.objLog:
-                    self.objLog.log('Sending message to %s with message: %s' % (number, message), 'INFO')
-                self.m.send(number, message)
+                    self.objLog.log('Sending message to %s with message: %s' % (number, str(message)[:160]), 'INFO')
+                self.m.send(number, str(message)[:160])
+                if len(message) > 160:
+                    if self.objLog:
+                        self.objLog.log('Sending parial message 160-320 to %s: %s' % (number, str(message)[160:][:160]), 'INFO')
+                    time.sleep(10)
+                    self.m.send(number, str(message)[160:][:160])
+                    if len(message) > 320:
+                        if self.objLog:
+                            self.objLog.log('Sending parial message 320-480 to %s: %s' % (number, str(message)[320:][:160]), 'INFO')
+                        time.sleep(10)
+                        self.m.send(number, str(message)[320:][:160])
 
             # Pause for next poll
             time.sleep(self.check_int)
