@@ -593,7 +593,7 @@ You can then use memcache and creating a 'sms' entry that would be used as queue
 Adding scheduled job to inform sensor-status by SMS when alarm is armed
 -------------------------
 
-Add entry such as below
+Add entry such as below by "crontab -e"
 
 	30 1 * * * . $HOME/.profile; cd $HOME/git/edoautohome ; python ./edoAutoHome.py --show_onoff >> /tmp/edoatuohome_cron.log
 
