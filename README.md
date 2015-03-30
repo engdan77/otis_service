@@ -262,10 +262,15 @@ The naming standard of those sections are [camera_x] where X is numeric.
 	mode = server
 
 This section is to define the main options such as
+
 debug: enable or disable verbose logging
+
 lcd: if you connected lcd to the main board - see schematics
+
 button: if button is installed on mainboard - see schematics
+
 listen_port: this is the TCP-port that the software listens for incoming events (master for get updates from clients, clients to retieve "update_me" event from master)
+
 mode: could either be "server" or "client"
 
 	[sensor_power]
@@ -337,11 +342,17 @@ Configuration for the lux/brightness-meter that would indicate when it gets brig
 	sms_check_int = 10
 
 SMS configuration for those with Huawei 3G/4G dongles (such as E392) and like to use this to get informed when a sensor reaches its threshold or being able to recieve SMS-text with keyword "status" to send sensor-status back in return.
+
 trigger_when: Used to define which sensors and what threshold/keyword needs to be matched to send this alert as SMS
+
 sms_incoming_cmd: {'sms-keyword receieved': 'python function / external bash-command'}
+
 sms_number: The number to whom you would send the messages to
+
 sms_port: For future use building a TCP-socket server to listen for SMS to send
+
 sms_tty: Determine which device the USB dongle listens to
+
 sms_check_int: The interval which the SMS-listener polls queue
 
 *Hints:*
