@@ -344,9 +344,11 @@ sms_port: For future use building a TCP-socket server to listen for SMS to send
 sms_tty: Determine which device the USB dongle listens to
 sms_check_int: The interval which the SMS-listener polls queue
 
-Hints: 
-To test Huawei modem in advance you could install "gammu" for Linux and test as 'echo "All your base are belong to us" | gammu sendsms TEXT 0704xxxx'
-Some modems such as E392 is recognized as mass-storage device, this could be solved by installing "usb_modeswitch" and use it as 'usb_modeswitch -c /usr/share/usb_modeswitch/12d1\:1505 -v 12d1 -p 1505 -W'
+*Hints:*
+
+* To test Huawei modem in advance you could install "gammu" for Linux and test as 'echo "All your base are belong to us" | gammu sendsms TEXT 0704xxxx'
+
+* Some modems such as E392 is recognized as mass-storage device, this could be solved by installing "usb_modeswitch" and use it as 'usb_modeswitch -c /usr/share/usb_modeswitch/12d1\:1505 -v 12d1 -p 1505 -W'
 
 
 -------------------------
