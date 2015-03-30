@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150328.490 $"
+__version__ = "$Revision: 20150330.515 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -894,6 +894,12 @@ class alarmClass():
         self.alarm_settings = objConfig.getAll('alarm')
         self.buzzer_settings = objConfig.getAll('alarm_buzzer')
         # self.mail_settings = objConfig.getAll('alarm_mail')
+        try:
+            import memcache
+        except:
+            print "Please install memcache to support inter-process communication"
+        else:
+            self.shared = memcache.Client(['127.0.0.1:11211'], debug=1)
 
     def check(self, argDev, argAttr, argData):
         ''' Checks the argDevice, argAttribute '''
@@ -904,6 +910,8 @@ class alarmClass():
             print edoGetDateTime() + ": Alarm armed"
             logObject.log("Alarm armed", 'INFO')
             self.active = True
+            if 'shared' in dir(self):
+                self.shared.set('active', True)
             # Start blink of LED exists
             if self.objLed:
                 logObject.log("Start Led blink", 'DEBUG')
@@ -916,6 +924,8 @@ class alarmClass():
             print edoGetDateTime() + ": Alarm disarmed"
             logObject.log("Alarm disarmed", 'INFO')
             self.active = False
+            if 'shared' in dir(self):
+                self.shared.set('active', False)
             if self.objLed:
                 logObject.log("Stop Led blink", 'DEBUG')
                 self.objLed.led_off()
@@ -972,7 +982,7 @@ if __name__ == "__main__":
     parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
     parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
     parser.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
-    parser.add_argument("--show_onoff", help="Return 0 if on, 1 if off", action="store_true")
+    parser.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1066,11 +1076,39 @@ if __name__ == "__main__":
         print show_status_short()
 
     if args.show_onoff:
-        # List status of current sesnors status in short format
-        result = show_onoff(server_settings['db_ip'],
-                            server_settings['db_user'],
-                            server_settings['db_pass'],
-                            server_settings['db_name'], logObject)
+        # Show status if alarm is armed or disarmed
+        ''' Old method
+        import re
+        import glob
+        for fn in glob.glob('./edoAutoHome.log.*'):
+            with open(fn, 'r') as f:
+                lines = f.readlines()
+                found = [(i, item) for i, item in enumerate(lines) if re.search('armed', item)]
+                if str(found[-1:]).find('disarmed'):
+                    print "Disarmed"
+                    sys.exit(1)
+                else:
+                    print "Armed"
+                    sys.exit(0)
+        '''
+        try:
+            import memcache
+        except:
+            print "Please install memcache to support reading status"
+        else:
+            shared = memcache.Client(['127.0.0.1:11211'], debug=1)
+            status = shared.get('active')
+            print "Get value from memcache %s" % (str(status),)
+            if status:
+                print "Armed"
+                if configObject.get('alarm_sms', 'enable') == 'true':
+                    sms_number = configObject.get('alarm_sms', 'sms_number')
+                # Add SMS to queue
+                shared.set('sms', (sms_number, show_status_short()))
+                sys.exit(0)
+            else:
+                print "Disarmed"
+                sys.exit(1)
 
     if args.start:
         # Get list of cameras
@@ -1169,3 +1207,12 @@ if __name__ == "__main__":
         # Stop enabled cameras
         for camera in cameras:
             camera.stop()
+
+        # Update memcache if it exists
+        try:
+            import memcache
+        except:
+            print "Please install memcache to support inter-process communication"
+        else:
+            shared = memcache.Client(['127.0.0.1:11211'], debug=1)
+            shared.set('active', False)
