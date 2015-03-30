@@ -1,8 +1,8 @@
 [server]
 db_user = edoAutoHome
 db_name = edoAutoHome
-db_pass = xxx
-db_ip = 192.168.200.1
+db_pass = xxxxx
+db_ip = 192.168.0.1
 
 [client]
 deviceid = 1
@@ -22,6 +22,7 @@ pin = 17
 
 [alarm]
 activate = [{"dev": 1, "attr": 2, "data": "=Door Close"}]
+clients_ip = [["192.168.0.2", 3000],["192.168.0.3", 3000]]
 led = true
 led_pin = 25
 
@@ -32,31 +33,31 @@ pin = 27
 
 [alarm_gmail]
 enable = true
-trigger_when = [{"dev": 1, "attr": 1, "data": "=Motion"}]
-gmail_user = xxx
-gmail_pass = xxx
-from = xxx@gmail.com
-to = xxx@xxx
+trigger_when = [{"dev": 1, "attr": 1, "data": "=Motion"},{"dev": 3, "attr": 1, "data": "=Motion"},{"dev": 3, "attr": 4, "data": ">40"},{"dev": 3, "attr": 5, "data": ">33"},{"dev": 2, "attr": 3, "data": ">10"}]
+gmail_user = gmail_user
+gmail_pass = xxxxx
+from = gmail_user@gmail.com
+to = y@gmail.y
 cameras = camera_hall
 
 [alarm_sms]
 enable = true
-trigger_when = [{"dev": 1, "attr": 1, "data": "=Motion"}]
-sms_incoming_cmd = '{'hallo': 'ls'}'
-sms_number = '+46704586564'
+trigger_when = [{"dev": 3, "attr": 1, "data": "=Motion"},{"dev": 3, "attr": 4, "data": ">40"},{"dev": 3, "attr": 5, "data": ">33"},{"dev": 2, "attr": 3, "data": ">10"}]
+sms_incoming_cmd = {'files': 'ls', 'status': 'show_status_short'}
+sms_number = 0704xxxxxx
 sms_port = 3001
-sms_tty = /dev/tty.HUAWEIMobile-Modem
+sms_tty = /dev/ttyUSB0
 sms_check_int = 10
 
 [camera_1]
 name = hall
 enable = true
 type = pi
-ftp_server = 192.168.200.1
-ftp_port = xxx
-ftp_user = xxx
-ftp_pass = xxx
-ftp_dir = xxx/camera
+ftp_server = 192.168.0.10
+ftp_port = 21
+ftp_user = edoautohome
+ftp_pass = edoautohome
+ftp_dir = edoautohome/camera
 
 [trigger_tellstickswitch]
 enable = false
