@@ -147,13 +147,13 @@ I've also included to github the edoWeb-project that includes a web-frontend bas
 Keywords
 -------------------------
 
-*device*
+**device**
 Represents the device that you run the software on
 
-*attribute*
+**attribute**
 This represents the sensor or unit that you will recieve or send data to (e.g. TellSteck-Outlet, PIR-sensor)
 
-*larm-mode* 
+**larm-mode** 
 This is when main board will be monitoring for any threasholds breaches of any sensors, and when that happens trigger e-mail (or SMS)
 
 -------------------------
@@ -263,15 +263,15 @@ The naming standard of those sections are [camera_x] where X is numeric.
 
 This section is to define the main options such as
 
-debug: enable or disable verbose logging
+**debug:** enable or disable verbose logging
 
-lcd: if you connected lcd to the main board - see schematics
+**lcd:** if you connected lcd to the main board - see schematics
 
-button: if button is installed on mainboard - see schematics
+**button:** if button is installed on mainboard - see schematics
 
-listen_port: this is the TCP-port that the software listens for incoming events (master for get updates from clients, clients to retieve "update_me" event from master)
+**listen_port:** this is the TCP-port that the software listens for incoming events (master for get updates from clients, clients to retieve "update_me" event from master)
 
-mode: could either be "server" or "client"
+**mode:** could either be *"server"* or *"client"*
 
 	[sensor_power]
 	enable = false
@@ -343,19 +343,19 @@ Configuration for the lux/brightness-meter that would indicate when it gets brig
 
 SMS configuration for those with Huawei 3G/4G dongles (such as E392) and like to use this to get informed when a sensor reaches its threshold or being able to recieve SMS-text with keyword "status" to send sensor-status back in return.
 
-trigger_when: Used to define which sensors and what threshold/keyword needs to be matched to send this alert as SMS
+**trigger_when:** Used to define which sensors and what threshold/keyword needs to be matched to send this alert as SMS
 
-sms_incoming_cmd: {'sms-keyword receieved': 'python function / external bash-command'}
+**sms_incoming_cmd:** {'sms-keyword receieved': 'python function / external bash-command'}
 
-sms_number: The number to whom you would send the messages to
+**sms_number:** The number to whom you would send the messages to
 
-sms_port: For future use building a TCP-socket server to listen for SMS to send
+**sms_port:** For future use building a TCP-socket server to listen for SMS to send
 
-sms_tty: Determine which device the USB dongle listens to
+**sms_tty:** Determine which device the USB dongle listens to
 
-sms_check_int: The interval which the SMS-listener polls queue
+**sms_check_int:** The interval which the SMS-listener polls queue
 
-*Hints:*
+**Hints:**
 
 * To test Huawei modem in advance you could install "gammu" for Linux and test as 'echo "All your base are belong to us" | gammu sendsms TEXT 0704xxxx'
 
