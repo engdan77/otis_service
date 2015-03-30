@@ -94,6 +94,8 @@ optional arguments:
   --add_device        Add device to database
   --list_attribute    List attributes in database
   --add_attribute     Add attribute to database
+  --show_status_short  Show all statuses short
+  --show_onoff         Return 0 if alarm is armed/on, 1 if it is disarmed/off
 ```
 
 -------------------------
