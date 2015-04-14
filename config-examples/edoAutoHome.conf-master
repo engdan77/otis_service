@@ -43,7 +43,7 @@ cameras = camera_hall
 [alarm_sms]
 enable = true
 trigger_when = [{"dev": 3, "attr": 1, "data": "=Motion"},{"dev": 3, "attr": 4, "data": ">40"},{"dev": 3, "attr": 5, "data": ">33"},{"dev": 2, "attr": 3, "data": ">10"}]
-sms_incoming_cmd = {'files': 'ls', 'status': 'show_status_short'}
+sms_incoming_cmd = {'files': 'ls', 'status': 'show_status_short', 'pause': 'pause'}
 sms_number = 0704xxxxxx
 sms_port = 3001
 sms_tty = /dev/ttyUSB0
