@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20150330.1235 $"
+__version__ = "$Revision: 20150414.1237 $"
 
 import sys
 import threading
@@ -2317,10 +2317,10 @@ class edoModemDongle(threading.Thread):
                                 print "Found %s in list of passed functions" % (cmd_func,)
                                 cmd_func = self.functions[cmd_func]
                             if callable(cmd_func):
-                                print "Command is existing function, calling %s with args: %s" % (cmd, args)
-                                args = args.split(",")
+                                args = args.split()
+                                print "Command is existing function, calling %s with args: %s" % (cmd, str(args))
                                 # Might add arguments in the future
-                                result = cmd_func()
+                                result = cmd_func(*args)
                                 if self.objLog:
                                     self.objLog.log('Sending message to %s with body: %s' % (sms.number, str(result)), 'INFO')
                                 else:
