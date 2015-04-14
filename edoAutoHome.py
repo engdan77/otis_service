@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150330.515 $"
+__version__ = "$Revision: 20150414.547 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -98,23 +98,35 @@ def list_attr_dev(db_ip, db_user, db_pass, db_name, logObject):
             print(result)
 
 
-# def show_status_short(db_ip, db_user, db_pass, db_name, logObject):
 def show_status_short():
-        ''' List current status of sensors  '''
-        from edo import edoTestSocket, edoClassDB
-        db_ip = server_settings['db_ip']
-        db_user = server_settings['db_user']
-        db_pass = server_settings['db_pass']
-        db_name = server_settings['db_name']
-        if edoTestSocket(db_ip, 3306, logObject) == 0:
-            oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
-            result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
-        else:
-            result = None
-        info = ""
-        for line in result:
-            info += "%s \"%s\" %s %s\n" % line
-        return info
+    ''' List current status of sensors  '''
+    from edo import edoTestSocket, edoClassDB
+    db_ip = server_settings['db_ip']
+    db_user = server_settings['db_user']
+    db_pass = server_settings['db_pass']
+    db_name = server_settings['db_name']
+    if edoTestSocket(db_ip, 3306, logObject) == 0:
+        oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+        result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
+    else:
+        result = None
+    info = ""
+    for line in result:
+        info += "%s \"%s\" %s %s\n" % line
+    return info
+
+
+def pause(duration):
+    ''' Function to pause alerts for x hours '''
+    try:
+        import memcache
+    except:
+        print "Please install memcache to support reading status, can't use pause function"
+    else:
+        shared = memcache.Client(['127.0.0.1:11211'], debug=1)
+        print "Current pause is set to %s" % (str(shared.get("pause")),)
+        print "Pausing alerts for %s hours" % (str(duration),)
+        shared.set("pause", int(duration) * 3600)
 
 
 def show_onoff(db_ip, db_user, db_pass, db_name, logObject):
@@ -703,7 +715,7 @@ def getEnabledAlarms(configObject, logObject=None):
         sms_trigger_when = configObject.get('alarm_sms', 'trigger_when')
 
         # Create SMS Dongle Object
-        alarm_sms = edoSMSAlarm(logObject, tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when, functions={'show_status_short': show_status_short})
+        alarm_sms = edoSMSAlarm(logObject, tty=sms_tty, incoming_cmd=sms_incoming_cmd, check_int=sms_check_int, number=sms_number, trigger_when=sms_trigger_when, functions={'show_status_short': show_status_short, 'pause': pause})
         alarm_sms.start()
         print "Starting SMS engine thread: %s" % (str(alarm_sms),)
         # Start listening daemon - experimental
@@ -890,6 +902,7 @@ class alarmClass():
         self.AlarmDevList = AlarmDevList
         self.objLed = objLed
         self.active = False
+        self.skip = False
         self.activate = json.loads(objConfig.get('alarm', 'activate'))
         self.alarm_settings = objConfig.getAll('alarm')
         self.buzzer_settings = objConfig.getAll('alarm_buzzer')
@@ -933,37 +946,57 @@ class alarmClass():
         if self.active is True:
             # Trigger alarm when active
             import time
-            for AlarmDev in AlarmDevList:
-                if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer', 'enable') == 'true':
-                    print edoGetDateTime() + ": BUZZ !!"
-                    logObject.log("BUZZ !!", 'DEBUG')
-                    AlarmDev.buzz_on(0.5)
-                    time.sleep(0.2)
-                    AlarmDev.buzz_on(0.5)
-                if AlarmDev.__class__.__name__ is "edoGmailAlarm":
-                    mail_body = edoGetDateTime() + ": " + str(argData)
-                    if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
-                        dev_name = get_dev_name(argDev, self.objDB)
-                        attr_name = get_attr_name(argAttr, self.objDB)
-                        print edoGetDateTime() + ": Mail Alarm Sent, " + dev_name + ", " + attr_name
-                        logObject.log("Alarm mail sent, " + dev_name + ", " + attr_name, 'INFO')
-                        # Trigger and get images from all cameras
-                        cam_shots = triggerAllCameras(cameras)
-                        # Send email
-                        AlarmDev.trigger(AlarmDev.mail_to, "HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData), mail_body, cam_shots)
-                        # Upload pictrues to FTP
-                        uploadAllCameras(cameras)
-                if AlarmDev.__class__.__name__ is "edoSMSAlarm":
-                    sms_body = edoGetDateTime() + ": " + str(argData)
-                    if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
-                        dev_name = get_dev_name(argDev, self.objDB)
-                        attr_name = get_attr_name(argAttr, self.objDB)
-                        print edoGetDateTime() + ": SMS Alarm Sent, " + dev_name + ", " + attr_name
-                        logObject.log("Alarm SMS sent, " + dev_name + ", " + attr_name, 'INFO')
-                        # Send sms
-                        AlarmDev.trigger(AlarmDev.number, sms_body + "..HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData))
-                    # Feed event and have mail sent if true
-                    # AlarmDev.trigger(self.objDB, argDev, argAttr, argData)
+
+            # If a pause exists in the queue
+            if 'shared' in dir(self):
+                pause_memcache = self.shared.get('pause')
+                if pause_memcache > 0:
+                    pause_memcache = int(pause_memcache)
+                    print "Found pause in memcache queue for %s minutes" % (str(pause_memcache / 60),)
+                    pause_memcache -= 60
+                    if pause_memcache <= 0:
+                        pause_memcache = 0
+                        self.skip = False
+                        print "Pause is complete"
+                    else:
+                        self.skip = True
+                    self.shared.set("pause", pause_memcache)
+                    time.sleep(60)
+                else:
+                    self.skip = False
+
+            if not self.skip:
+                for AlarmDev in AlarmDevList:
+                    if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer', 'enable') == 'true':
+                        print edoGetDateTime() + ": BUZZ !!"
+                        logObject.log("BUZZ !!", 'DEBUG')
+                        AlarmDev.buzz_on(0.5)
+                        time.sleep(0.2)
+                        AlarmDev.buzz_on(0.5)
+                    if AlarmDev.__class__.__name__ is "edoGmailAlarm":
+                        mail_body = edoGetDateTime() + ": " + str(argData)
+                        if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
+                            dev_name = get_dev_name(argDev, self.objDB)
+                            attr_name = get_attr_name(argAttr, self.objDB)
+                            print edoGetDateTime() + ": Mail Alarm Sent, " + dev_name + ", " + attr_name
+                            logObject.log("Alarm mail sent, " + dev_name + ", " + attr_name, 'INFO')
+                            # Trigger and get images from all cameras
+                            cam_shots = triggerAllCameras(cameras)
+                            # Send email
+                            AlarmDev.trigger(AlarmDev.mail_to, "HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData), mail_body, cam_shots)
+                            # Upload pictrues to FTP
+                            uploadAllCameras(cameras)
+                    if AlarmDev.__class__.__name__ is "edoSMSAlarm":
+                        sms_body = edoGetDateTime() + ": " + str(argData)
+                        if checkEventInTrigger((argDev, argAttr, argData), AlarmDev.trigger_when):
+                            dev_name = get_dev_name(argDev, self.objDB)
+                            attr_name = get_attr_name(argAttr, self.objDB)
+                            print edoGetDateTime() + ": SMS Alarm Sent, " + dev_name + ", " + attr_name
+                            logObject.log("Alarm SMS sent, " + dev_name + ", " + attr_name, 'INFO')
+                            # Send sms
+                            AlarmDev.trigger(AlarmDev.number, sms_body + "..HomeAlarm Trigger " + dev_name + ", " + attr_name + " " + str(argData))
+                        # Feed event and have mail sent if true
+                        # AlarmDev.trigger(self.objDB, argDev, argAttr, argData)
 
 
 if __name__ == "__main__":
@@ -983,6 +1016,7 @@ if __name__ == "__main__":
     parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
     parser.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
     parser.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
+    parser.add_argument("--pause_hours", help="Pause alerts for X hours", type=int, metavar="hours", choices=xrange(0, 200), default=None)
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1110,6 +1144,9 @@ if __name__ == "__main__":
                 print "Disarmed"
                 sys.exit(1)
 
+    if args.pause_hours is not None:
+        pause(args.pause_hours)
+
     if args.start:
         # Get list of cameras
         cameras = getEnabledCameras(configObject, logObject)
@@ -1216,3 +1253,4 @@ if __name__ == "__main__":
         else:
             shared = memcache.Client(['127.0.0.1:11211'], debug=1)
             shared.set('active', False)
+            shared.set('pause', 0)
