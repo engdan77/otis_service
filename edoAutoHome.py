@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150414.547 $"
+__version__ = "$Revision: 20150603.600 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -116,6 +116,34 @@ def show_status_short():
     return info
 
 
+def show_status_json():
+    ''' List current status of sensors in json-format '''
+    from edo import edoTestSocket, edoClassDB
+    from collections import namedtuple, defaultdict
+    import json
+
+    db_ip = server_settings['db_ip']
+    db_user = server_settings['db_user']
+    db_pass = server_settings['db_pass']
+    db_name = server_settings['db_name']
+    if edoTestSocket(db_ip, 3306, logObject) == 0:
+        oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+        result = oDB.sql("SELECT updated AS last_update, data, a.name AS sensor, CONCAT(d.location, '-', d.name) AS device, da.device_id AS device_id, da.attr_id AS attr_id FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
+    else:
+        result = None
+
+    database_record = namedtuple('database_record', 'date data sensor device device_id attr_id')
+    result_json = defaultdict(list)
+
+    for record in map(database_record._make, result):
+        record = record._replace(device_id=int(record.device_id))
+        # Get 10 last record for each device
+        last_records = oDB.sql("SELECT date, data FROM event_history WHERE device_id=%s AND attr_id=%s ORDER BY id DESC LIMIT 10" % (record.device_id, record.attr_id))
+        # print last_records
+        result_json[record.device].append({record.sensor: {'last_update': record.date, 'data': record.data, 'last_records': last_records}})
+    return json.dumps(result_json)
+
+
 def pause(duration):
     ''' Function to pause alerts for x hours '''
     try:
@@ -154,19 +182,23 @@ class edoThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     ''' BaseRequestHandler uses TCPserver and does the actual work '''
     def handle(self):
         data = self.request.recv(1024)
+        print(edoGetDateTime() + ": Recieved - " + str(data))
 
-        # Check if json
+        if data.find('show_status_json') > 0:
+            print(edoGetDateTime() + ": Sending status of sensors in JSON")
+            self.request.sendall(show_status_json())
+            return
+
         try:
+            # Check if json
             data = json.loads(data)
         except Exception:
             pass
         else:
             self.server.queue.put(data)
-            print(edoGetDateTime() + ": Recieved - " + str(data))
-
-        response = "ok"
-        self.request.sendall(response)
-        # print self.server.queue
+            response = "ok"
+            self.request.sendall(response)
+            # print self.server.queue
 
 
 class edoThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -286,7 +318,13 @@ class triggerQueueHandler(threading.Thread):
 
                 # If data comes as json
                 if str(type(trigger)) == "<type 'unicode'>":
-                    trigger = json.loads(trigger)
+                    try:
+                        trigger = json.loads(trigger)
+                    except Exception as e:
+                        print "Could not parse json '%s' result in error: %s" % (str(trigger), str(e))
+                        self.logObject.log("Could not parse incoming TCP json '%s'" % (str(trigger)), 'WARNING')
+                        continue
+
                 # date = edoGetDateTime()
                 deviceId = trigger['deviceId']
                 type_id = trigger['type_id']
@@ -1015,6 +1053,7 @@ if __name__ == "__main__":
     parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
     parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
     parser.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
+    parser.add_argument("--show_status_json", help="Show all statuses in json", action="store_true")
     parser.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
     parser.add_argument("--pause_hours", help="Pause alerts for X hours", type=int, metavar="hours", choices=xrange(0, 200), default=None)
     args = parser.parse_args()
@@ -1108,6 +1147,9 @@ if __name__ == "__main__":
 
     if args.show_status_short:
         print show_status_short()
+
+    if args.show_status_json:
+        print show_status_json()
 
     if args.show_onoff:
         # Show status if alarm is armed or disarmed
