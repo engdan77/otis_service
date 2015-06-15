@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20150601.1237 $"
+__version__ = "$Revision: 20150615.1238 $"
 
 import sys
 import threading
@@ -2295,7 +2295,17 @@ class edoModemDongle(threading.Thread):
                     self.shared.set('sms', None)
 
             # Check if any new incoming SMS
-            msgs = self.m.messages()
+            try:
+                msgs = self.m.messages()
+            except SerialException:
+                self.objLog.log('SMS DONGLE ERROR - REBOOTING in 3 hours', 'ERROR')
+                time.sleep(10800)
+                import subprocess
+                command = "/usr/bin/sudo /sbin/shutdown -r now"
+                process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+                output = process.communicate()[0]
+                print output
+
             if len(msgs) > 0:
                 for sms in msgs:
                     if self.objLog:
