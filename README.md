@@ -636,7 +636,7 @@ Pictures
 https://github.com/engdan77/edoWeb
 
 *Picture of edoAutoHomeMobile App developed for reading sensors from your mobile device*
-![mobile_app](https://github.com/engdan77/edoWeb/blob/master/pics/edoAutoHome_sensors.jpg).
+![mobile_app](https://github.com/engdan77/edoautohome/blob/master/pics/edoAutoHome_sensors.jpg).
 https://github.com/engdan77/edoAutoHomeMobile
 
 *Main Board based on RaspberryPI, NokiaLCD, PIR-sensor and Magnetic Door Switch*
