@@ -16,9 +16,10 @@ Some of the thoughts that I've had in mind when starting this have been
 - Support meassurement-sensors such as door-switches, PIR-sensor, Non-Intrusive PowerMeter and Temperature
 - Trigger alerts (e-mail and SMS) when sensors reach defines threshold
 - Support TellStick to manager electrical outlets and wireless Temperature sensors
+- Web-interface for reading sensors
+- Native Mobile Application supporting ios/Android for reading sensors
 
 As a front-end use a framework such as Web2Py
-
 ![Use-Case](https://github.com/engdan77/edoautohome/blob/master/pics/use_case.jpg)
 
 
@@ -71,6 +72,10 @@ The program we will use require spidev to be activated. The kernel module should
 
 [Installing Web-frontend - Optionally]
 Read instructions found at https://github.com/engdan77/edoWeb
+
+
+[Installing Mobile App for readings - Optionally]
+Read instructions found at https://github.com/engdan77/edoAutoHomeMobile
 ```
 
 ----------------------
@@ -628,6 +633,11 @@ Pictures
 -------------------------
 *Example of current status of sensors - based on edoWeb*
 ![Sensors](https://github.com/engdan77/edoWeb/blob/master/pics/edoWeb_sensors.png)
+https://github.com/engdan77/edoWeb
+
+*Picture of edoAutoHomeMobile App developed for reading sensors from your mobile device*
+![mobile_app](https://github.com/engdan77/edoWeb/blob/master/pics/edoAutoHome_sensors.jpg).
+https://github.com/engdan77/edoAutoHomeMobile
 
 *Main Board based on RaspberryPI, NokiaLCD, PIR-sensor and Magnetic Door Switch*
 ![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_1_MainBoard.jpg)
