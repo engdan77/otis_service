@@ -87,6 +87,7 @@ This solutions is very affordable in comparison with many commercial solutions, 
 | Item        | ~Cost  |
 | ------------- | -----:|
 | RaspberryPi Model B |    $25 |
+| Wifi-dongle |    $20 |
 | Breadboard, GPIO-port |    $9 |
 | Jumper wires      | $3 |
 | Buzzer |    $3 |
@@ -99,7 +100,7 @@ This solutions is very affordable in comparison with many commercial solutions, 
 | Lux-sensor |    $2 |
 | Led |    $1 |
 | 3G-dongle |    $? |
-| Total |    ~$67 |
+| _Total_ |   _~$87_ |
 
 
 ----------------------
