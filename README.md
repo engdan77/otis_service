@@ -19,8 +19,87 @@ Some of the thoughts that I've had in mind when starting this have been
 - Web-interface for reading sensors
 - Native Mobile Application supporting ios/Android for reading sensors
 
-As a front-end use a framework such as Web2Py
+As a front-end use a framework such as Web2Py, and mobile application developed
 ![Use-Case](https://github.com/engdan77/edoautohome/blob/master/pics/use_case.jpg)
+
+
+-------------------------
+History
+-------------------------
+
+**2014-08-12**
+
+I've been working on this project on my spare time for a few months and thought I would share this to github in case others would be interessted of the work or contribute with ideas.
+I will likely spend more time on this documentation but this is in short what have been developed
+
+*Hardware*
+* Main Board *[Device 1]* (the device that acts as master to the networked devices)
+ * Raspberry Pi
+ * Nokia LCD - that display when there are activity
+ * Button - when pressed will display current status of the sensors
+ * PIR-senosrs - detects motions
+ * Magnetic Switch - connect to door and register if open/closed
+
+* Kitchen Board *[Device 2]*
+ * Raspberry Pi
+ * Non-Intrusive Current Meter - used to determine whether stove is turned on when leaving home
+
+*Software*
+  * Master/Client setup
+  * Communicates with remote devices (RPI's) with their sensors
+  * Clients sends events to Master
+  * Master stores data to MySQL
+
+**2014-10-16**
+Eventually built the device to be kept in the livingroom with majority of the the sensors, and developed classes for those.
+
+*Hardware*
+* Livingroom Board *[Device 3]*
+ * Raspberry Pi
+ * DHT11 sensor for humidity and temperature
+ * MQ2 smoke sensor
+ * TSL2561 Lux Sensor for meassure brightness
+
+*Software*
+ * Tweaks made to Current Meter class to fix false alerts
+ * Classed developed for DHT11, MQ2 and TSL2561 creating threads for monitoring
+
+**2015-02-22**
+
+I've now published my Web frontend that I've developed using the Web2Py framework which you could now use to build graphs for all sensors, please watch it out at https://github.com/engdan77/edoWeb
+
+**2015-02-26**
+
+Now I've finalised the SMS-functionality that currently been tested with Huawei E392, that also supports incoming sms to trigger developed function or bash-command and return its result back as SMS.
+I've also included to github the edoWeb-project that includes a web-frontend based on Web2Py framework and PyGal for drawing graphs, see further down for details.
+
+**2015-08-03**
+
+I've now published my mobile application compiled for IOS/Android (as well as Mac OSX/Windows) that communicated with the RaspberryPi server using JSON and draws graphs historically. The intention with this app was to install on cheap tablet that you could install anywhere in the home where you like to read the current status of your sensors, please check out https://github.com/engdan77/edoAutoHomeMobile
+
+
+----------------------
+Rough cost estimation for hardware required
+----------------------
+
+This solutions is very affordable in comparison with many commercial solutions, most sensors could be purchased cheap from eg. Asia.
+
+| Item        | ~Cost  |
+| ------------- | -----:|
+| RaspberryPi Model B |    $25 |
+| Breadboard, GPIO-port |    $9 |
+| Jumper wires      | $3 |
+| Buzzer |    $3 |
+| Display 1.6"      |   $4 |
+| Door-switch |    $3 |
+| PIR-sensor |    $2 |
+| MQ2-gas sensors |    $6 |
+| DHT11 - temp/humid |    $4 |
+| Current-sensor |    $5 |
+| Lux-sensor |    $2 |
+| Led |    $1 |
+| 3G-dongle |    $? |
+| Total |    ~$67 |
 
 
 ----------------------
@@ -103,49 +182,6 @@ optional arguments:
   --show_onoff         Return 0 if alarm is armed/on, 1 if it is disarmed/off
 ```
 
--------------------------
-History
--------------------------
-
-**2014-08-12**
-I've been working on this project on my spare time for a few months and thought I would share this to github in case others would be interessted of the work or contribute with ideas.
-I will likely spend more time on this documentation but this is in short what have been developed
-
-*Hardware*
-* Main Board *[Device 1]* (the device that acts as master to the networked devices)
- * Raspberry Pi
- * Nokia LCD - that display when there are activity
- * Button - when pressed will display current status of the sensors
- * PIR-senosrs - detects motions
- * Magnetic Switch - connect to door and register if open/closed
-
-* Kitchen Board *[Device 2]*
- * Raspberry Pi
- * Non-Intrusive Current Meter - used to determine whether stove is turned on when leaving home
-
-*Software*
-  * Master/Client setup
-  * Communicates with remote devices (RPI's) with their sensors
-  * Clients sends events to Master
-  * Master stores data to MySQL
-
-**2014-10-16**
-Eventually built the device to be kept in the livingroom with majority of the the sensors, and developed classes for those.
-
-*Hardware*
-* Livingroom Board *[Device 3]*
- * Raspberry Pi
- * DHT11 sensor for humidity and temperature
- * MQ2 smoke sensor
- * TSL2561 Lux Sensor for meassure brightness
-
-*Software*
- * Tweaks made to Current Meter class to fix false alerts
- * Classed developed for DHT11, MQ2 and TSL2561 creating threads for monitoring
-
-**2015-02-26**
-Now I've finalised the SMS-functionality that currently been tested with Huawei E392, that also supports incoming sms to trigger developed function or bash-command and return its result back as SMS.
-I've also included to github the edoWeb-project that includes a web-frontend based on Web2Py framework and PyGal for drawing graphs, see further down for details.
 
 
 -------------------------
