@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160606.1238 $"
+__version__ = "$Revision: 20160606.1239 $"
 
 import sys
 import threading
@@ -1850,7 +1850,6 @@ def funcSendGMail(argServer, argPort, argUser, argPass, argTo, argFrom, argSubje
     if argPort is None: argPort = 587
 
     mailServer = smtplib.SMTP(argServer, argPort)
-    mailServer.set_debuglevel(1)
     mailServer.ehlo()
     mailServer.starttls()
     mailServer.ehlo()
