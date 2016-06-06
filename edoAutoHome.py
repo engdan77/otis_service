@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20160606.619 $"
+__version__ = "$Revision: 20160606.624 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -120,7 +120,7 @@ def show_history(**args):
     ''' Show history of events  '''
     from tabulate import tabulate
     length = args.get('length', 100)
-    mailer = args.get('mailer', True)
+    mailer = args.get('mailer', 'no')
     mail_settings = args.get('mail_settings', None)
     from edo import edoTestSocket, edoClassDB
     db_ip = server_settings['db_ip']
@@ -133,9 +133,11 @@ def show_history(**args):
         # result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
     else:
         result = None
+    print "Event history"
     result_text = tabulate(result)
     result_html = tabulate(result, tablefmt='html')
-    if mailer and mail_settings:
+    if mailer == 'yes' and mail_settings:
+        print "Sending mail"
         funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html)
     return result_text
 
@@ -1083,7 +1085,7 @@ if __name__ == "__main__":
     history_args = parser.add_argument_group("history_args")
     history_args.add_argument("--show_history", help="Show history of events", action="store_true")
     history_args.add_argument("number_of_events", default=100, type=int, help="Number of events, default:100")
-    history_args.add_argument("--send_as_mail", help="Also send as mail", action="store_true", default=False)
+    history_args.add_argument("mail_result", help="yes|no", choices=['yes', 'no'], default='yes')
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1097,7 +1099,7 @@ if __name__ == "__main__":
         server_settings = configObject.getAll('server')
         client_settings = configObject.getAll('client')
         alarm_settings = configObject.getAll('alarm')
-        alarm_mail_settings = configObject.getAll('alarm_mail')
+        alarm_mail_settings = configObject.getAll('alarm_gmail')
     else:
         configObject = edoClassConfig(CONFIG_FILE, logObject)
         createInitialConfig(configObject)
@@ -1219,7 +1221,7 @@ if __name__ == "__main__":
         pause(args.pause_hours)
 
     if args.show_history:
-        print show_history(mail_settings=alarm_mail_settings, length=args.number_of_events, mailer=args.send_as_mail)
+        print show_history(mail_settings=alarm_mail_settings, length=args.number_of_events, mailer=args.mail_result)
 
     if args.start:
         # Get list of cameras
