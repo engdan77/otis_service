@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20150603.600 $"
+__version__ = "$Revision: 20160606.619 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -114,6 +114,30 @@ def show_status_short():
     for line in result:
         info += "%s \"%s\" %s %s\n" % line
     return info
+
+
+def show_history(**args):
+    ''' Show history of events  '''
+    from tabulate import tabulate
+    length = args.get('length', 100)
+    mailer = args.get('mailer', True)
+    mail_settings = args.get('mail_settings', None)
+    from edo import edoTestSocket, edoClassDB
+    db_ip = server_settings['db_ip']
+    db_user = server_settings['db_user']
+    db_pass = server_settings['db_pass']
+    db_name = server_settings['db_name']
+    if edoTestSocket(db_ip, 3306, logObject) == 0:
+        oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
+        result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date desc limit {};'.format(length))
+        # result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
+    else:
+        result = None
+    result_text = tabulate(result)
+    result_html = tabulate(result, tablefmt='html')
+    if mailer and mail_settings:
+        funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html)
+    return result_text
 
 
 def show_status_json():
@@ -1056,6 +1080,10 @@ if __name__ == "__main__":
     parser.add_argument("--show_status_json", help="Show all statuses in json", action="store_true")
     parser.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
     parser.add_argument("--pause_hours", help="Pause alerts for X hours", type=int, metavar="hours", choices=xrange(0, 200), default=None)
+    history_args = parser.add_argument_group("history_args")
+    history_args.add_argument("--show_history", help="Show history of events", action="store_true")
+    history_args.add_argument("number_of_events", default=100, type=int, help="Number of events, default:100")
+    history_args.add_argument("--send_as_mail", help="Also send as mail", action="store_true", default=False)
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1069,6 +1097,7 @@ if __name__ == "__main__":
         server_settings = configObject.getAll('server')
         client_settings = configObject.getAll('client')
         alarm_settings = configObject.getAll('alarm')
+        alarm_mail_settings = configObject.getAll('alarm_mail')
     else:
         configObject = edoClassConfig(CONFIG_FILE, logObject)
         createInitialConfig(configObject)
@@ -1188,6 +1217,9 @@ if __name__ == "__main__":
 
     if args.pause_hours is not None:
         pause(args.pause_hours)
+
+    if args.show_history:
+        print show_history(mail_settings=alarm_mail_settings, length=args.number_of_events, mailer=args.send_as_mail)
 
     if args.start:
         # Get list of cameras
