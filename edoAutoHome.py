@@ -15,7 +15,7 @@ import Queue
 import time
 from edo import *
 
-__version__ = "$Revision: 20160606.624 $"
+__version__ = "$Revision: 20160607.629 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -1067,25 +1067,24 @@ if __name__ == "__main__":
     ''' Here starts the program '''
 
     parser = argparse.ArgumentParser(description='This pythonscript is used for home-automation')
-    parser.add_argument("--version", action="version", version=__version__)
-    # parser.add_argument("--sendjson", help="send json-messages to host", metavar="host ip", nargs=argparse.REMAINDER)
-    parser.add_argument("--sendjson", help="send json-messages to host", metavar=("host", "ip"), nargs=2)
-    parser.add_argument("--start", help="Starts the home-automation", action="store_true")
-    parser.add_argument("--createdb", help="Create initial database", action="store_true")
-    parser.add_argument("--list_device", help="List devices in database", action="store_true")
-    parser.add_argument("--add_device", help="Add device to database", action="store_true")
-    parser.add_argument("--list_attribute", help="List attributes in database", action="store_true")
-    parser.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
-    parser.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
-    parser.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
-    parser.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
-    parser.add_argument("--show_status_json", help="Show all statuses in json", action="store_true")
-    parser.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
-    parser.add_argument("--pause_hours", help="Pause alerts for X hours", type=int, metavar="hours", choices=xrange(0, 200), default=None)
-    history_args = parser.add_argument_group("history_args")
-    history_args.add_argument("--show_history", help="Show history of events", action="store_true")
-    history_args.add_argument("number_of_events", default=100, type=int, help="Number of events, default:100")
-    history_args.add_argument("mail_result", help="yes|no", choices=['yes', 'no'], default='yes')
+    choice = parser.add_mutually_exclusive_group(required=True)
+    choice.add_argument("--version", action="version", version=__version__)
+    # choice.add_argument("--sendjson", help="send json-messages to host", metavar="host ip", nargs=argparse.REMAINDER)
+    choice.add_argument("--sendjson", help="send json-messages to host", metavar=("host", "ip"), nargs=2)
+    choice.add_argument("--start", help="Starts the home-automation", action="store_true")
+    choice.add_argument("--createdb", help="Create initial database", action="store_true")
+    choice.add_argument("--list_device", help="List devices in database", action="store_true")
+    choice.add_argument("--add_device", help="Add device to database", action="store_true")
+    choice.add_argument("--list_attribute", help="List attributes in database", action="store_true")
+    choice.add_argument("--add_attribute", help="Add attribute to database", action="store_true")
+    choice.add_argument("--attr_to_dev", help="Assign attribute to device", action="store_true")
+    choice.add_argument("--list_attrdev", help="List attribute to device", action="store_true")
+    choice.add_argument("--show_status_short", help="Show all statuses short", action="store_true")
+    choice.add_argument("--show_status_json", help="Show all statuses in json", action="store_true")
+    choice.add_argument("--show_onoff", help="Return 0 if alarm is armed/on, 1 if it is disarmed/off", action="store_true")
+    choice.add_argument("--pause_hours", help="Pause alerts for X hours", type=int, metavar="hours", choices=xrange(0, 200), default=None)
+    choice.add_argument("--show_history", help="Show history", action="store_true")
+    choice.add_argument("--send_history", help="Send history by mail using configuration in alarm_gmail", action="store_true")
     args = parser.parse_args()
     if len(sys.argv) == 1: parser.print_help()
 
@@ -1221,7 +1220,10 @@ if __name__ == "__main__":
         pause(args.pause_hours)
 
     if args.show_history:
-        print show_history(mail_settings=alarm_mail_settings, length=args.number_of_events, mailer=args.mail_result)
+        print show_history(mail_settings=None, length=100, mailer='no')
+
+    if args.send_history:
+        print show_history(mail_settings=alarm_mail_settings, length=100, mailer='yes')
 
     if args.start:
         # Get list of cameras
