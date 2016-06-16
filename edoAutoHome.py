@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160616.696 $"
+__version__ = "$Revision: 20160616.697 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -136,7 +136,7 @@ def show_history(**args):
             try:
                 result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date asc limit {};'.format(length * 10))
                 db_success = True
-            except Exceptions as e:
+            except Exception as e:
                 length -= 10
                 print str(e)
                 print 'Failed getting records'
