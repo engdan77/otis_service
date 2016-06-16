@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160616.698 $"
+__version__ = "$Revision: 20160616.699 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -129,6 +129,7 @@ def show_history(**args):
     db_pass = server_settings['db_pass']
     db_name = server_settings['db_name']
     db_success = False
+    org_length = length
     if edoTestSocket(db_ip, 3306, logObject) == 0:
         oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
         while not db_success:
@@ -143,6 +144,7 @@ def show_history(**args):
         if not db_success:
             sys.exit(1)
 
+        length = org_length
         formatted_list = list()
         buffert = list()
         prev_sensor = None
