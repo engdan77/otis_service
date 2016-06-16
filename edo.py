@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160606.1239 $"
+__version__ = "$Revision: 20160616.1239 $"
 
 import sys
 import threading
@@ -195,7 +195,7 @@ class edoClassDB():
         elif self.dbtype == 'mysql':
             import MySQLdb
             host, port, user, passwd, db = self.dbconnect
-            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db)
+            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db, connection_timeout=120, buffered=True)
             if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
             auto_keyword = 'AUTO_INCREMENT'
         else:
