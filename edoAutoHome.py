@@ -13,9 +13,10 @@ import os
 import argparse
 import Queue
 import time
+from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160607.629 $"
+__version__ = "$Revision: 20160616.694 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -129,8 +130,31 @@ def show_history(**args):
     db_name = server_settings['db_name']
     if edoTestSocket(db_ip, 3306, logObject) == 0:
         oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
-        result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date desc limit {};'.format(length))
-        # result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated DESC;")
+        result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date asc limit {};'.format(length*10))
+        # result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated;")
+        formatted_list = list()
+        buffert = list()
+        prev_sensor = None
+        for date, dn, dl, an, data in result:
+            d = date[8:10]
+            m = date[5:7]
+            t = date[11:]
+            date = '{}/{} {}'.format(d, m, t)
+            sensor = '{}/{} {}'.format(dl[:3], dn[:3], an)
+            if not prev_sensor == sensor:
+                # Empty buffert into formatted_list if moren 3 items dump only
+                # one
+                if len(buffert) >= 3:
+                    formatted_list.append(buffert[-1])
+                else:
+                    formatted_list.extend(buffert)
+                buffert = list()
+                buffert.append([date, sensor, '{} ({} other)'.format(data, len(buffert)) if len(buffert) > 3 else data])
+            else:
+                buffert.append([date, sensor, '{} ({} other)'.format(data, len(buffert)) if len(buffert) > 3 else data])
+            prev_sensor = sensor
+        # pprint(formatted_list)
+        result = formatted_list[-length:]
     else:
         result = None
     print "Event history"
@@ -1221,6 +1245,7 @@ if __name__ == "__main__":
 
     if args.show_history:
         print show_history(mail_settings=None, length=100, mailer='no')
+        # show_history(mail_settings=None, length=100, mailer='no')
 
     if args.send_history:
         print show_history(mail_settings=alarm_mail_settings, length=100, mailer='yes')
