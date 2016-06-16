@@ -77,6 +77,9 @@ I've also included to github the edoWeb-project that includes a web-frontend bas
 
 I've now published my mobile application compiled for IOS/Android (as well as Mac OSX/Windows) that communicated with the RaspberryPi server using JSON and draws graphs historically. The intention with this app was to install on cheap tablet that you could install anywhere in the home where you like to read the current status of your sensors, please check out https://github.com/engdan77/edoAutoHomeMobile
 
+**2016-06-06**
+
+Minor updates to backend to supply arguments such as --show_history and --send_history to view that last historical events in terminal or have it sent by mail, add to e.g. daily crontab
 
 ----------------------
 Rough cost estimation for hardware required
