@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160616.699 $"
+__version__ = "$Revision: 20160616.702 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -135,7 +135,9 @@ def show_history(**args):
         while not db_success:
             print 'Getting last {} records'.format(length)
             try:
-                result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date asc limit {};'.format(length * 10))
+                result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date desc limit {};'.format(length * 10))
+                result = list(result)
+                result.reverse()
                 db_success = True
             except Exception as e:
                 length /= 2
