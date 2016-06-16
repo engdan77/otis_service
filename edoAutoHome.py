@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160616.694 $"
+__version__ = "$Revision: 20160616.696 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -128,10 +128,21 @@ def show_history(**args):
     db_user = server_settings['db_user']
     db_pass = server_settings['db_pass']
     db_name = server_settings['db_name']
+    db_success = False
     if edoTestSocket(db_ip, 3306, logObject) == 0:
         oDB = edoClassDB('mysql', (db_ip, '3306', db_user, db_pass, db_name), logObject)
-        result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date asc limit {};'.format(length*10))
-        # result = oDB.sql("SELECT DATE_FORMAT(updated, '%e/%c %H:%i') as last_update, data, a.name as sensor, CONCAT(d.location, '-', d.name) as device FROM device_attr da INNER JOIN device d ON (da.device_id = d.device_id) INNER JOIN attribute a ON (da.attr_id = a.attr_id) ORDER BY updated;")
+        while not db_success:
+            print 'Getting last {} records'.format(length)
+            try:
+                result = oDB.sql('select h.date, d.name, d.location, a.name, h.data from event_history h inner join device d on (h.device_id = d.device_id) inner join attribute a on (h.attr_id = a.attr_id) order by date asc limit {};'.format(length * 10))
+                db_success = True
+            except Exceptions as e:
+                length -= 10
+                print str(e)
+                print 'Failed getting records'
+        if not db_success:
+            sys.exit(1)
+
         formatted_list = list()
         buffert = list()
         prev_sensor = None
