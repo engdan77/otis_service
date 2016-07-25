@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160725.703 $"
+__version__ = "$Revision: 20160725.704 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -120,6 +120,7 @@ def show_status_short():
 def show_history(**args):
     ''' Show history of events  '''
     from tabulate import tabulate
+    cameras = args.get('cameras', None)
     length = args.get('length', 100)
     mailer = args.get('mailer', 'no')
     mail_settings = args.get('mail_settings', None)
@@ -178,7 +179,7 @@ def show_history(**args):
     result_html = tabulate(result, tablefmt='html')
     if mailer == 'yes' and mail_settings:
         print "Sending mail"
-        if len(self.cameras) > 0:
+        if len(cameras) > 0:
             # Trigger photos and attach
             cam_shots = triggerAllCameras(cameras)
             funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html, Files=cam_shots)
