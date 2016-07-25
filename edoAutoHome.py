@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 from edo import *
 
-__version__ = "$Revision: 20160616.702 $"
+__version__ = "$Revision: 20160725.703 $"
 
 CONFIG_FILE = "edoAutoHome.conf"
 
@@ -178,7 +178,12 @@ def show_history(**args):
     result_html = tabulate(result, tablefmt='html')
     if mailer == 'yes' and mail_settings:
         print "Sending mail"
-        funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html)
+        if len(self.cameras) > 0:
+            # Trigger photos and attach
+            cam_shots = triggerAllCameras(cameras)
+            funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html, Files=cam_shots)
+        else:
+            funcSendGMail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'], '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html)
     return result_text
 
 
@@ -1139,6 +1144,7 @@ if __name__ == "__main__":
         client_settings = configObject.getAll('client')
         alarm_settings = configObject.getAll('alarm')
         alarm_mail_settings = configObject.getAll('alarm_gmail')
+        cameras = getEnabledCameras(configObject, logObject)
     else:
         configObject = edoClassConfig(CONFIG_FILE, logObject)
         createInitialConfig(configObject)
@@ -1264,7 +1270,7 @@ if __name__ == "__main__":
         # show_history(mail_settings=None, length=100, mailer='no')
 
     if args.send_history:
-        print show_history(mail_settings=alarm_mail_settings, length=100, mailer='yes')
+        print show_history(mail_settings=alarm_mail_settings, length=100, mailer='yes', cameras=cameras)
 
     if args.start:
         # Get list of cameras

@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160616.1239 $"
+__version__ = "$Revision: 20160725.1239 $"
 
 import sys
 import threading
