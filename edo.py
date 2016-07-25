@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/edoautohome
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160725.1239 $"
+__version__ = "$Revision: 20160725.1240 $"
 
 import sys
 import threading
@@ -1825,6 +1825,7 @@ def funcSendGMail(argServer, argPort, argUser, argPass, argTo, argFrom, argSubje
 
         # Attach Images
         for i, varImage in enumerate(listImages, start=1):
+            print "Attaching {} to mail".format(varImage)
             fp = open(varImage, 'rb')
             msgImage = MIMEImage(fp.read())
             fp.close()
@@ -1834,6 +1835,7 @@ def funcSendGMail(argServer, argPort, argUser, argPass, argTo, argFrom, argSubje
 
         # Attach other files
         for i, varFile in enumerate(listNonImages, start=1):
+            print "Attaching {} to mail".format(varFile)
             fp = open(varFile, 'rb')
             msgAttach = MIMEApplication(fp.read())
             fp.close()
@@ -1849,6 +1851,7 @@ def funcSendGMail(argServer, argPort, argUser, argPass, argTo, argFrom, argSubje
     if argServer is None: argServer = "smtp.gmail.com"
     if argPort is None: argPort = 587
 
+    print "Start sending mail"
     mailServer = smtplib.SMTP(argServer, argPort)
     mailServer.ehlo()
     mailServer.starttls()
@@ -1856,6 +1859,7 @@ def funcSendGMail(argServer, argPort, argUser, argPass, argTo, argFrom, argSubje
     mailServer.login(gmailUser, gmailPassword)
     mailServer.sendmail(gmailUser, argTo, msgRoot.as_string())
     mailServer.close()
+    print "Done sending mail"
 
 
 class edoGmail():
