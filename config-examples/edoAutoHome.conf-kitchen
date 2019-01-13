@@ -5,7 +5,7 @@ db_pass = xxx
 db_ip = 192.168.200.1
 
 [client]
-deviceid = 2
+device_id = 2
 master_ip = 192.168.200.241
 master_port = 3000
 

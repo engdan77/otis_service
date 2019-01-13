@@ -5,7 +5,7 @@ db_pass = xxxxx
 db_ip = 192.168.0.1
 
 [client]
-deviceid = 1
+device_id = 1
 master_ip = 127.0.0.1
 
 [sensor_motionpir]

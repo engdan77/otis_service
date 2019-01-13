@@ -116,7 +116,7 @@ Installing the dependencies and edoAutoHome
 # cd git
 
 [Download edoAutoHome]
-# git clone https://github.com/engdan77/edoautohome.git
+# git clone https://github.com/engdan77/otis_service.git
 
 [Install MySQLdb]
 # apt-get install python-mysqldb
@@ -166,7 +166,7 @@ Command Line Arguments
 ----------------------
 
 ```
-usage: edoAutoHome.py [-h] [--version] [--sendjson host ip] [--start]
+usage: otis_service.py [-h] [--version] [--sendjson host ip] [--start]
                       [--createdb] [--list_device] [--add_device]
                       [--list_attribute] [--add_attribute]
 
@@ -239,7 +239,7 @@ Configuration Example
 This part describes the credentials and IP of the MySQL datase you use that software store all historical data to
 
 	[client]
-	deviceid = 1
+	device_id = 1
 	master_ip = 127.0.0.1
 
 If the roles is set as "client" (see in "main" section) you defined the IP of the master device that client will communicate with, otherwise use localhost if Master
@@ -433,14 +433,14 @@ ex.
 	class edoSwitch(threading.Thread):
 	    '''
 	    Class object to handle door switch
-	    object = edoSwitch(pin=18, check_int=0.5, logObject)
+	    object = edoSwitch(pin=18, check_int=0.5, log_object)
 	    '''
-	    def __init__(self, loggerObject=None, **kwargs):
+	    def __init__(self, logger_object=None, **kwargs):
 		threading.Thread.__init__(self)
 		import Queue
 		import RPi.GPIO as io
 
-		self.objLog = loggerObject
+		self.objLog = logger_object
 		self.queue = Queue.Queue()
 		self.running = False
 		self.status = None
@@ -485,7 +485,7 @@ ex.
 		return self.all_status
 
 
-*Step 2)* Add definition of new attribute (sensor) in edoAutoHome.conf with those attribute required 
+*Step 2)* Add definition of new attribute (sensor) in otis_service.conf with those attribute required 
 
 - Name what you want as long as you add it to configParser
 - Assure to assign a unique attr_id (Attribute ID)
@@ -502,15 +502,15 @@ ex.
 
 ex.
 
-	def getEnabledSensors(configObject, logObject=None):
+	def getEnabledSensors(logger_object, log_object=None):
 	....
-	if configObject.get('sensor_motionpir', 'enable') == 'true':
-	    pin = configObject.get('sensor_motionpir', 'pin')
-	    # interval = configObject.get('sensor_motionpir', 'interval')
-	    sensor_motionpir = edoPirMotion(logObject, pin=int(pin))
+	if logger_object.get('sensor_motionpir', 'enable') == 'true':
+	    pin = logger_object.get('sensor_motionpir', 'pin')
+	    # interval = logger_object.get('sensor_motionpir', 'interval')
+	    sensor_motionpir = edoPirMotion(log_object, pin=int(pin))
 	    sensors.append(sensor_motionpir)
-	if configObject.get('sensor_doorswitch', 'enable') == 'true':
-	    pin = configObject.get('sensor_doorswitch', 'pin')
+	if logger_object.get('sensor_doorswitch', 'enable') == 'true':
+	    pin = logger_object.get('sensor_doorswitch', 'pin')
 
 *Step 4)* Updating TriggerQueue Handler = Responsible for adding (incoming) “alerts” in queue into Database
 
@@ -523,12 +523,12 @@ ex.
 	    # Motion Pir
 	    date = edoEpochToDate(data[0])
 	    db_data = "Motion"
-	    alert = date + ",id=" + str(deviceId) + ": Motion Detected"
+	    alert = date + ",id=" + str(device_id) + ": Motion Detected"
 	elif attr_id == 2:
 	    # Door switch
 	    date = edoEpochToDate(data[0][0])
 	    db_data = "Door " + data[0][1]
-	    alert = date + ",id=" + str(deviceId) + ": " + db_data
+	    alert = date + ",id=" + str(device_id) + ": " + db_data
 
 
 
@@ -544,7 +544,7 @@ ex.
 	    if sensor.__class__.__name__ is "edoPirMotion":
 		motions_detected = sensor.get()
 		if len(motions_detected) > 0:
-		    result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
+		    result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
 		    self.queue.put(result)
 
 	for sensor in self.sensorList:
@@ -552,7 +552,7 @@ ex.
 	    if sensor.__class__.__name__ is "edoSwitch":
 		switch_status = sensor.get()
 		if len(switch_status) > 0:
-		    result = {'deviceId': self.deviceId, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
+		    result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
 		    self.queue.put(result)
 
 
@@ -560,34 +560,34 @@ ex.
 
 ex.
 
-	~/git/edoautohome # ./edoAutoHome.py --list_device
+	~/git/edoautohome # ./otis_service.py --list_device
 	((1L, 1L, 'hall', 'Solna'), 
 	 (2L, 2L, 'kitchen', 'Solna'), 
 	 (3L, 3L, 'livingroom', 'Solna'))
 
-	~/git/edoautohome # ./edoAutoHome.py --list_attribute
+	~/git/edoautohome # ./otis_service.py --list_attribute
 	((1L, 1L, 'Motion'), 
 	 (2L, 2L, 'Door'), 
 	 (3L, 3L, 'Stove'), 
 	 (4L, 4L, 'Humidity'), 
 	 (5L, 5L, 'Temperature'))
 
-	~/git/edoautohome # ./edoAutoHome.py --add_attribute
+	~/git/edoautohome # ./otis_service.py --add_attribute
 	Enter id: 6
 	Enter Name of attribute: Smoke
 
-	~/git/edoautohome # ./edoAutoHome.py --list_attrdev
+	~/git/edoautohome # ./otis_service.py --list_attrdev
 	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
 	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
 	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
 	 (4L, 3L, '4', '32.0', '2014-10-17 09:04:42'), 
 	 (5L, 3L, '5', '27.0', '2014-10-17 09:04:43'))
 
-	~/git/edoautohome # ./edoAutoHome.py --attr_to_dev
+	~/git/edoautohome # ./otis_service.py --attr_to_dev
 	Enter attribute id: 6
 	Enter device id to associate attribute to: 3
 
-	~/git/edoautohome # ./edoAutoHome.py --list_attrdev
+	~/git/edoautohome # ./otis_service.py --list_attrdev
 	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
 	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
 	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
@@ -600,17 +600,17 @@ ex.
 -------------------------
 Example of Output
 -------------------------
-	pi@raspberrypi ~/edoAutoHome $ sudo python edoAutoHome.py --start                                                                  
+	pi@raspberrypi ~/edoAutoHome $ sudo python otis_service.py --start                                                                  
 	TriggerListener loop running in thread: Thread-8                                                                                   
 	Client started and monitoring sensors: [<edoPirMotion(Thread-4, started -1293638544)>, <edoSwitch(Thread-5, started -1302027152)>] 
 	Press Enter to exit                                                                                                                
-	2014-08-13 07:18:11: Handling trigger in queue {'data': [(1407907091, 'Open')], 'attr_id': 2, 'deviceId': '1', 'type_id': 1}       
-	2014-08-13 07:18:19: Handling trigger in queue {'data': [1407907099], 'attr_id': 1, 'deviceId': '1', 'type_id': 1}                 
-	2014-08-13 07:18:33: Recieved - {"data": [[1407907112, 100]], "attr_id": 3, "deviceId": 2, "type_id": 1}                           
-	2014-08-13 07:18:33: Handling trigger in queue {u'attr_id': 3, u'data': [[1407907112, 100]], u'deviceId': 2, u'type_id': 1}        
-	2014-08-13 07:18:47: Recieved - {"data": [[1407907127, 0]], "attr_id": 3, "deviceId": 2, "type_id": 1}                             
-	2014-08-13 07:18:47: Handling trigger in queue {u'attr_id': 3, u'data': [[1407907127, 0]], u'deviceId': 2, u'type_id': 1}          
-	2014-08-13 07:18:49: Handling trigger in queue {'data': [1407907128], 'attr_id': 1, 'deviceId': '1', 'type_id': 1}                 
+	2014-08-13 07:18:11: Handling trigger in queue {'data': [(1407907091, 'Open')], 'attr_id': 2, 'device_id': '1', 'type_id': 1}       
+	2014-08-13 07:18:19: Handling trigger in queue {'data': [1407907099], 'attr_id': 1, 'device_id': '1', 'type_id': 1}                 
+	2014-08-13 07:18:33: Recieved - {"data": [[1407907112, 100]], "attr_id": 3, "device_id": 2, "type_id": 1}                           
+	2014-08-13 07:18:33: Handling trigger in queue {u'attr_id': 3, u'data': [[1407907112, 100]], u'device_id': 2, u'type_id': 1}        
+	2014-08-13 07:18:47: Recieved - {"data": [[1407907127, 0]], "attr_id": 3, "device_id": 2, "type_id": 1}                             
+	2014-08-13 07:18:47: Handling trigger in queue {u'attr_id': 3, u'data': [[1407907127, 0]], u'device_id': 2, u'type_id': 1}          
+	2014-08-13 07:18:49: Handling trigger in queue {'data': [1407907128], 'attr_id': 1, 'device_id': '1', 'type_id': 1}                 
 
 -------------------------
 Utilise interprocess SMS-gateway
@@ -640,7 +640,7 @@ Adding scheduled job to inform sensor-status by SMS when alarm is armed
 
 Add entry such as below by "crontab -e"
 
-	30 1 * * * . $HOME/.profile; cd $HOME/git/edoautohome ; python ./edoAutoHome.py --show_onoff >> /tmp/edoatuohome_cron.log
+	30 1 * * * . $HOME/.profile; cd $HOME/git/edoautohome ; python ./otis_service.py --show_onoff >> /tmp/edoatuohome_cron.log
 
 You may have to adjust the path to the directory where you've downloaded this script to.
 In the above example at 1:30 every night if the alarm is activated (you not being at home) a list of sensors would be sent as sms to defined number in configuration
@@ -676,7 +676,7 @@ Pictures
 https://github.com/engdan77/edoWeb
 
 *Picture of edoAutoHomeMobile App developed for reading sensors from your mobile device*
-![mobile_app](https://github.com/engdan77/edoautohome/blob/master/pics/edoAutoHome_sensors.jpg)
+![mobile_app](https://github.com/engdan77/edoautohome/blob/master/pics/otis_sensors.jpg)
 https://github.com/engdan77/edoAutoHomeMobile
 
 *Main Board based on RaspberryPI, NokiaLCD, PIR-sensor and Magnetic Door Switch*
