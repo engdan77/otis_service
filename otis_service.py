@@ -187,13 +187,13 @@ def show_history(**args):
             print str(cam_shots)
             print "Mail being sent"
             send_gmail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'],
-                       '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html,
+                       '{}@gmail.com'.format(mail_settings['gmail_user']), 'otis_service History', result_html,
                        Files=cam_shots)
             print "Complete"
         else:
             print "Sending mail"
             send_gmail(None, None, mail_settings['gmail_user'], mail_settings['gmail_pass'], mail_settings['to'],
-                       '{}@gmail.com'.format(mail_settings['gmail_user']), 'edoAutoHome History', result_html)
+                       '{}@gmail.com'.format(mail_settings['gmail_user']), 'otis_service History', result_html)
     return result_text
 
 
@@ -646,7 +646,7 @@ def create_initial_config(config_object):
     config_object.add_update('server', {'DB_IP': '127.0.0.1',
                                         'DB_USER': 'user',
                                         'DB_PASS': 'pass',
-                                        'DB_NAME': 'edoAutoHome'})
+                                        'DB_NAME': 'otis_service'})
     config_object.add_update('client', {'MASTER_IP': '127.0.0.1',
                                         'device_id': '1'})
     config_object.add_update('sensor_motionpir', {'ENABLE': 'false',
@@ -1056,7 +1056,7 @@ class Alarm:
         self.objConfig = obj_config
         self.objDB = obj_db
         self.AlarmDevList = alarm_dev_list
-        self.objLed = obj_led
+        self.obj_led = obj_led
         self.active = False
         self.skip = False
         self.activate = json.loads(obj_config.get('alarm', 'activate'))
@@ -1083,9 +1083,9 @@ class Alarm:
             if 'shared' in dir(self):
                 self.shared.set('active', True)
             # Start blink of LED exists
-            if self.objLed:
+            if self.obj_led:
                 log_object.log("Start Led blink", 'DEBUG')
-                self.objLed.blink()
+                self.obj_led.blink()
                 # Send reset to all clients sensors to get alarm if currently
                 # active
                 send_reset_all_clients(alarm_dev_list, self.objConfig)
@@ -1096,9 +1096,9 @@ class Alarm:
             self.active = False
             if 'shared' in dir(self):
                 self.shared.set('active', False)
-            if self.objLed:
+            if self.obj_led:
                 log_object.log("Stop Led blink", 'DEBUG')
-                self.objLed.led_off()
+                self.obj_led.led_off()
 
         if self.active is True:
             # Trigger alarm when active
@@ -1382,8 +1382,8 @@ if __name__ == "__main__":
             objLcd = Lcd()
             objLcd.start()
             localIP = get_local_ip()
-            objLcd.text("edoAutoHome\n" + localIP, 2)
-            objLcd.change_default("edoAutoHome\n" + localIP)
+            objLcd.text("otis_service\n" + localIP, 2)
+            objLcd.change_default("otis_service\n" + localIP)
             # Check for button
             if main_settings['button'] == 'true' and main_settings['mode'] == 'server':
                 # 1 click, call displayStatudLcd, print all sensors

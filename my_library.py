@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 
 # my_library.py - This Module is for the most used classes and methods
-# URL: https://github.com/engdan77/edoautohome
+# URL: https://github.com/engdan77/otis_service
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
 __version__ = "$Revision: 20160725.1240 $"

@@ -1,6 +1,6 @@
 [server]
-db_user = edoAutoHome
-db_name = edoAutoHome
+db_user = otis_service
+db_name = otis_service
 db_pass = xxxxx
 db_ip = 192.168.0.1
 
@@ -55,9 +55,9 @@ enable = true
 type = pi
 ftp_server = 192.168.0.10
 ftp_port = 21
-ftp_user = edoautohome
-ftp_pass = edoautohome
-ftp_dir = edoautohome/camera
+ftp_user = otis_service
+ftp_pass = otis_service
+ftp_dir = otis_service/camera
 
 [trigger_tellstickswitch]
 enable = false

@@ -1,6 +1,6 @@
 [server]
-db_user = edoAutoHome
-db_name = edoAutoHome
+db_user = otis_service
+db_name = otis_service
 db_pass = xxx
 db_ip = 127.0.0.1
 

@@ -11,7 +11,7 @@
 {'type':'umlshape', 'id':'edoButton', 'x':2087, 'y':243, 'width':86, 'height':215, 'attrs':'objLog|running|status|timeout|count|timer|functions|pin|check_int', 'meths':'__init__|run|stop'}
 {'type':'umlshape', 'id':'edoClassSyslogLogger', 'x':2021, 'y':1368, 'width':178, 'height':124, 'attrs':'oLogger|oHandler|oFormatter', 'meths':'__init__|log'}
 {'type':'umlshape', 'id':'edoMCPvalue', 'x':1399, 'y':1508, 'width':102, 'height':254, 'attrs':'minref|adc_in|clockpin|mosipin|misopin|cspin|check_int|sleep_int|logger_object|objLog|queue|running|status', 'meths':'__init__|poll_value'}
-{'type':'umlshape', 'id':'alarmClass', 'x':645, 'y':961, 'width':100, 'height':189, 'attrs':'objConfig|objDB|AlarmDevList|objLed|active|activate|alarm_settings|buzzer_settings', 'meths':'__init__|check'}
+{'type':'umlshape', 'id':'alarmClass', 'x':645, 'y':961, 'width':100, 'height':189, 'attrs':'objConfig|objDB|AlarmDevList|obj_led|active|activate|alarm_settings|buzzer_settings', 'meths':'__init__|check'}
 {'type':'umlshape', 'id':'triggerListener', 'x':942, 'y':620, 'width':136, 'height':150, 'attrs':'queue|host|server|server_thread', 'meths':'__init__|start|stop'}
 {'type':'umlshape', 'id':'edoThreadedTCPRequestHandler', 'x':553, 'y':1494, 'width':245, 'height':62, 'attrs':'', 'meths':'handle'}
 {'type':'umlshape', 'id':'edoLcd', 'x':1258, 'y':646, 'width':94, 'height':228, 'attrs':'counter|objLog|queue|default|running|sleep_time', 'meths':'__init__|text|run|change_default|blink|blank|stop'}

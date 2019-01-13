@@ -1,4 +1,4 @@
-edoAutoHome
+otis_service
 ==============
 
 Author
@@ -20,7 +20,7 @@ Some of the thoughts that I've had in mind when starting this have been
 - Native Mobile Application supporting ios/Android for reading sensors
 
 As a front-end use a framework such as Web2Py, and mobile application developed
-![Use-Case](https://github.com/engdan77/edoautohome/blob/master/pics/use_case.jpg)
+![Use-Case](https://github.com/engdan77/otis_service/blob/master/pics/use_case.jpg)
 
 
 -------------------------
@@ -75,7 +75,7 @@ I've also included to github the edoWeb-project that includes a web-frontend bas
 
 **2015-08-03**
 
-I've now published my mobile application compiled for IOS/Android (as well as Mac OSX/Windows) that communicated with the RaspberryPi server using JSON and draws graphs historically. The intention with this app was to install on cheap tablet that you could install anywhere in the home where you like to read the current status of your sensors, please check out https://github.com/engdan77/edoAutoHomeMobile
+I've now published my mobile application compiled for IOS/Android (as well as Mac OSX/Windows) that communicated with the RaspberryPi server using JSON and draws graphs historically. The intention with this app was to install on cheap tablet that you could install anywhere in the home where you like to read the current status of your sensors, please check out https://github.com/engdan77/otis_serviceMobile
 
 **2016-06-06**
 
@@ -107,7 +107,7 @@ This solutions is very affordable in comparison with many commercial solutions, 
 
 
 ----------------------
-Installing the dependencies and edoAutoHome
+Installing the dependencies and otis_service
 ----------------------
 ```
 
@@ -115,7 +115,7 @@ Installing the dependencies and edoAutoHome
 # mkdir git
 # cd git
 
-[Download edoAutoHome]
+[Download otis_service]
 # git clone https://github.com/engdan77/otis_service.git
 
 [Install MySQLdb]
@@ -138,7 +138,7 @@ The program we will use require spidev to be activated. The kernel module should
 [Installing Adafruit's Raspberry-Pi Python Code Library]
 # apt-get install python-smbus
 # git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
-# cp Adafruit-Raspberry-Pi-Python-Code/Adafruit_I2C/Adafruit_I2C.py edoautohome/
+# cp Adafruit-Raspberry-Pi-Python-Code/Adafruit_I2C/Adafruit_I2C.py otis_service/
 
 [Install modile for piCamera]
 # apt-get install python-picamera
@@ -158,7 +158,7 @@ Read instructions found at https://github.com/engdan77/edoWeb
 
 
 [Installing Mobile App for readings - Optionally]
-Read instructions found at https://github.com/engdan77/edoAutoHomeMobile
+Read instructions found at https://github.com/engdan77/otis_serviceMobile
 ```
 
 ----------------------
@@ -231,8 +231,8 @@ Configuration Example
 -------------------------
 
 	[server]
-	db_user = edoAutoHome
-	db_name = edoAutoHome
+	db_user = otis_service
+	db_name = otis_service
 	db_pass = xxx
 	db_ip = 192.168.200.1
 
@@ -560,34 +560,34 @@ ex.
 
 ex.
 
-	~/git/edoautohome # ./otis_service.py --list_device
+	~/git/otis_service # ./otis_service.py --list_device
 	((1L, 1L, 'hall', 'Solna'), 
 	 (2L, 2L, 'kitchen', 'Solna'), 
 	 (3L, 3L, 'livingroom', 'Solna'))
 
-	~/git/edoautohome # ./otis_service.py --list_attribute
+	~/git/otis_service # ./otis_service.py --list_attribute
 	((1L, 1L, 'Motion'), 
 	 (2L, 2L, 'Door'), 
 	 (3L, 3L, 'Stove'), 
 	 (4L, 4L, 'Humidity'), 
 	 (5L, 5L, 'Temperature'))
 
-	~/git/edoautohome # ./otis_service.py --add_attribute
+	~/git/otis_service # ./otis_service.py --add_attribute
 	Enter id: 6
 	Enter Name of attribute: Smoke
 
-	~/git/edoautohome # ./otis_service.py --list_attrdev
+	~/git/otis_service # ./otis_service.py --list_attrdev
 	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
 	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
 	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
 	 (4L, 3L, '4', '32.0', '2014-10-17 09:04:42'), 
 	 (5L, 3L, '5', '27.0', '2014-10-17 09:04:43'))
 
-	~/git/edoautohome # ./otis_service.py --attr_to_dev
+	~/git/otis_service # ./otis_service.py --attr_to_dev
 	Enter attribute id: 6
 	Enter device id to associate attribute to: 3
 
-	~/git/edoautohome # ./otis_service.py --list_attrdev
+	~/git/otis_service # ./otis_service.py --list_attrdev
 	((1L, 1L, '2', 'Door Open', '2014-10-17 18:58:46'), 
 	 (2L, 2L, '3', '2', '2014-10-18 09:09:13'), 
 	 (3L, 1L, '1', 'Motion', '2014-10-18 11:29:26'), 
@@ -600,7 +600,7 @@ ex.
 -------------------------
 Example of Output
 -------------------------
-	pi@raspberrypi ~/edoAutoHome $ sudo python otis_service.py --start                                                                  
+	pi@raspberrypi ~/otis_service $ sudo python otis_service.py --start                                                                  
 	TriggerListener loop running in thread: Thread-8                                                                                   
 	Client started and monitoring sensors: [<edoPirMotion(Thread-4, started -1293638544)>, <edoSwitch(Thread-5, started -1302027152)>] 
 	Press Enter to exit                                                                                                                
@@ -640,7 +640,7 @@ Adding scheduled job to inform sensor-status by SMS when alarm is armed
 
 Add entry such as below by "crontab -e"
 
-	30 1 * * * . $HOME/.profile; cd $HOME/git/edoautohome ; python ./otis_service.py --show_onoff >> /tmp/edoatuohome_cron.log
+	30 1 * * * . $HOME/.profile; cd $HOME/git/otis_service ; python ./otis_service.py --show_onoff >> /tmp/edoatuohome_cron.log
 
 You may have to adjust the path to the directory where you've downloaded this script to.
 In the above example at 1:30 every night if the alarm is activated (you not being at home) a list of sensors would be sent as sms to defined number in configuration
@@ -659,13 +659,13 @@ Data Model
 -------------------------
 
 *Database Model*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_4_database_model.png)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_4_database_model.png)
 
 *Class Diagram [Version: 20140809.398]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_5_ClassDiagram.jpg)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_5_ClassDiagram.jpg)
 
 *Sequence Diagram [Version: 20140809.398]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_6_SequenceDiagram.png)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_6_SequenceDiagram.png)
 
 
 -------------------------
@@ -675,21 +675,21 @@ Pictures
 ![Sensors](https://github.com/engdan77/edoWeb/blob/master/pics/edoWeb_sensors.png)
 https://github.com/engdan77/edoWeb
 
-*Picture of edoAutoHomeMobile App developed for reading sensors from your mobile device*
-![mobile_app](https://github.com/engdan77/edoautohome/blob/master/pics/otis_sensors.jpg)
-https://github.com/engdan77/edoAutoHomeMobile
+*Picture of otis_serviceMobile App developed for reading sensors from your mobile device*
+![mobile_app](https://github.com/engdan77/otis_service/blob/master/pics/otis_sensors.jpg)
+https://github.com/engdan77/otis_serviceMobile
 
 *Main Board based on RaspberryPI, NokiaLCD, PIR-sensor and Magnetic Door Switch*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_1_MainBoard.jpg)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_1_MainBoard.jpg)
 
 *Scematic over the Main Board [Device 1]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_2_Schematic_Main_Board.jpg)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_2_Schematic_Main_Board.jpg)
 
 *Scematic over the Kitchen Board [Device 2]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_3_Schematic_Kitchen.jpg)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_3_Schematic_Kitchen.jpg)
 
 *Scematic over the Livingroom Board [Device 3]*
-![Main Board](https://github.com/engdan77/edoautohome/blob/master/pics/IMG_7_Schematic_Livingroom.png)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_7_Schematic_Livingroom.png)
 
 -------------------------
 Reference to other Projects and Modules
