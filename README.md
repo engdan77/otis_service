@@ -1,19 +1,16 @@
 otis_service
 ==============
 
-Author
---------------
-Very short introduction is that my name is Daniel Engvall and lives in Sweden/Stockholm and have programming as his hobby (amongst other stuff) :)
-
 Background
 --------------
 
-This is a project for home automation developed in Python 2.x
+This has been a beginners project to gain experience of Python including threading, queues and sockets. 
+By the time (2014) I did not find any Python based "home automation" project.
 Some of the thoughts that I've had in mind when starting this have been 
 
 - Hardware based on Raspbery PI ver. B that has the benefit being cheap and also have GPIO to support sensors of all kind (also supports most Adruino sensors)
 - Software developed in Python 2.x which is portable and easy to work with
-- Support meassurement-sensors such as door-switches, PIR-sensor, Non-Intrusive PowerMeter and Temperature
+- Support measurement-sensors such as door-switches, PIR-sensor, Non-Intrusive PowerMeter and Temperature
 - Trigger alerts (e-mail and SMS) when sensors reach defines threshold
 - Support TellStick to manager electrical outlets and wireless Temperature sensors
 - Web-interface for reading sensors
@@ -22,6 +19,8 @@ Some of the thoughts that I've had in mind when starting this have been
 As a front-end use a framework such as Web2Py, and mobile application developed
 ![Use-Case](https://github.com/engdan77/otis_service/blob/master/pics/use_case.jpg)
 
+Later on (2019) I've found [Home Assistant](https://github.com/home-assistant/home-assistant) being a great replacement used for my new house.
+For current installation I've added option for client to publish events through MQTT to easily integrate into Home Assistant or similar projects.
 
 -------------------------
 History
@@ -80,6 +79,10 @@ I've now published my mobile application compiled for IOS/Android (as well as Ma
 **2016-06-06**
 
 Minor updates to backend to supply arguments such as --show_history and --send_history to view that last historical events in terminal or have it sent by mail, add to e.g. daily crontab
+
+**2019-01-13**
+
+Made some rough cleanup of the project and adding support for MQTT.
 
 ----------------------
 Rough cost estimation for hardware required
