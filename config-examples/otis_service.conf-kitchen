@@ -9,6 +9,12 @@ device_id = 2
 master_ip = 192.168.200.241
 master_port = 3000
 
+[mqtt_client]
+enable = true
+mqtt_broker = 127.0.0.1
+mqtt_user = xxx
+mqtt_pass = xxx
+
 [sensor_motionpir]
 enable = false
 attr_id = 1

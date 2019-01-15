@@ -10,6 +10,8 @@ import argparse
 import json
 import os
 import time
+import paho.mqtt.publish as publish
+import paho.mqtt
 
 from my_library import *
 
@@ -427,36 +429,43 @@ class TriggerQueueHandler(threading.Thread):
                     # Motion Pir
                     date = EpochToDate(data[0])
                     db_data = "Motion"
+                    event = "motion"
                     alert = date + ",id=" + str(device_id) + ": Motion Detected"
                 elif attr_id == 2:
                     # Door switch
                     date = EpochToDate(data[0][0])
                     db_data = "Door " + data[0][1]
+                    event = "door"
                     alert = date + ",id=" + str(device_id) + ": " + db_data
                 elif attr_id == 3:
                     # Power Meter
                     date = EpochToDate(data[0][0])
                     db_data = str(data[0][1])
+                    event = "power"
                     alert = date + ",id=" + str(device_id) + ": " + "Power Changed " + db_data
                 elif attr_id == 4:
                     # Humidity Meter
                     date = EpochToDate(data[0][0])
                     db_data = str(data[0][1])
+                    event = "humidity"
                     alert = date + ",id=" + str(device_id) + ": " + "Humidity Changed " + db_data
                 elif attr_id == 5:
                     # Temperature Meter
                     date = EpochToDate(data[0][0])
                     db_data = str(data[0][1])
+                    event = "temp"
                     alert = date + ",id=" + str(device_id) + ": " + "Temperature Changed " + db_data
                 elif attr_id == 6:
                     # MQ2 Meter
                     date = EpochToDate(data[0][0])
                     db_data = str(data[0][1])
+                    event = "smoke"
                     alert = date + ",id=" + str(device_id) + ": " + "MQ2 Changed " + db_data
                 elif attr_id == 7:
                     # LuxMeter
                     date = EpochToDate(data[0][0])
                     db_data = str(data[0][1])
+                    event = "lux"
                     alert = date + ",id=" + str(device_id) + ": " + "Lux Changed " + db_data
 
                 # If LCD exists
@@ -491,6 +500,17 @@ class TriggerQueueHandler(threading.Thread):
                     else:
                         self.log_object.log("Error sending event: " + str(send_data) + " Exception: " + str(result),
                                             'ERROR')
+
+                if mqtt_client_settings['enable'] == 'true':
+                    message = 'otis/{}/{}'.format(device_id, event)
+                    mqtt_broker = mqtt_client_settings['mqtt_broker']
+                    mqtt_auth = {'username': mqtt_client_settings['mqtt_user'],
+                                 'password': mqtt_client_settings['mqtt_password']}
+                    publish.single(message,
+                                   db_data,
+                                   hostname=mqtt_broker,
+                                   client_id=device_id,
+                                   auth=mqtt_auth)
 
                 time.sleep(0.5)
 
@@ -1192,16 +1212,17 @@ if __name__ == "__main__":
 
     # Create config file if required
     if os.path.isfile(CONFIG_FILE):
-        logger_object = ClassConfig(CONFIG_FILE, log_object)
-        main_settings = logger_object.get_all('main')
-        server_settings = logger_object.get_all('server')
-        client_settings = logger_object.get_all('client')
-        alarm_settings = logger_object.get_all('alarm')
-        alarm_mail_settings = logger_object.get_all('alarm_gmail')
-        cameras = get_enabled_cameras(logger_object, log_object)
+        config_object = ClassConfig(CONFIG_FILE, log_object)
+        main_settings = config_object.get_all('main')
+        server_settings = config_object.get_all('server')
+        client_settings = config_object.get_all('client')
+        alarm_settings = config_object.get_all('alarm')
+        alarm_mail_settings = config_object.get_all('alarm_gmail')
+        mqtt_client_settings = config_object.get_all('mqtt_client')
+        cameras = get_enabled_cameras(config_object, log_object)
     else:
-        logger_object = ClassConfig(CONFIG_FILE, log_object)
-        create_initial_config(logger_object)
+        config_object = ClassConfig(CONFIG_FILE, log_object)
+        create_initial_config(config_object)
         print("Configuration created, please restart")
         sys.exit(0)
 
@@ -1307,8 +1328,8 @@ if __name__ == "__main__":
             print "Get value from memcache %s" % (str(status),)
             if status:
                 print "Armed"
-                if logger_object.get('alarm_sms', 'enable') == 'true':
-                    sms_number = logger_object.get('alarm_sms', 'sms_number')
+                if config_object.get('alarm_sms', 'enable') == 'true':
+                    sms_number = config_object.get('alarm_sms', 'sms_number')
                 # Add SMS to queue
                 shared.set('sms', (sms_number, show_status_short()))
                 sys.exit(0)
@@ -1328,7 +1349,7 @@ if __name__ == "__main__":
 
     if args.start:
         # Get list of cameras
-        cameras = get_enabled_cameras(logger_object, log_object)
+        cameras = get_enabled_cameras(config_object, log_object)
 
         # If server-mode
         if main_settings['mode'] == 'server':
@@ -1339,7 +1360,7 @@ if __name__ == "__main__":
             obj_db = ClassDB('mysql', (db_ip, 3306, db_user, db_pass, db_name), log_object)
 
             # Get list of enabled alarm devices
-            alarm_dev_list = get_enabled_alarms(logger_object, log_object)
+            alarm_dev_list = get_enabled_alarms(config_object, log_object)
 
             # Create Alarm Notifier object
             if alarm_settings['led'] == 'true':
@@ -1349,7 +1370,7 @@ if __name__ == "__main__":
                 obj_led.led_off()
             else:
                 obj_led = None
-            obj_alarm = Alarm(logger_object, obj_db, alarm_dev_list, obj_led, cameras)
+            obj_alarm = Alarm(config_object, obj_db, alarm_dev_list, obj_led, cameras)
         else:
             obj_db = None
             obj_alarm = None
@@ -1374,23 +1395,23 @@ if __name__ == "__main__":
         '''
 
         # Get list of Sensors
-        sensors = get_enabled_sensors(logger_object, log_object)
+        sensors = get_enabled_sensors(config_object, log_object)
 
         # Check for the components to be used
         # LCD, and Button to control
         if main_settings['lcd'] == 'true':
-            objLcd = Lcd()
-            objLcd.start()
+            obj_lcd = Lcd()
+            obj_lcd.start()
             localIP = get_local_ip()
-            objLcd.text("otis_service\n" + localIP, 2)
-            objLcd.change_default("otis_service\n" + localIP)
+            obj_lcd.text("otis_service\n" + localIP, 2)
+            obj_lcd.change_default("otis_service\n" + localIP)
             # Check for button
             if main_settings['button'] == 'true' and main_settings['mode'] == 'server':
                 # 1 click, call displayStatudLcd, print all sensors
-                obj_button = Button(2, {1: [display_status_lcd, [objLcd, get_sensor_status, obj_db]]})
+                obj_button = Button(2, {1: [display_status_lcd, [obj_lcd, get_sensor_status, obj_db]]})
                 obj_button.start()
         else:
-            objLcd = None
+            obj_lcd = None
 
         trigger_queue = Queue.Queue()
         start_loop(main_settings['mode'],
@@ -1398,16 +1419,16 @@ if __name__ == "__main__":
                    device_id=client_settings['device_id'],
                    sensors=sensors,
                    listen_port=main_settings['listen_port'],
-                   lcd=objLcd,
+                   lcd=obj_lcd,
                    db=obj_db,
                    alarm=obj_alarm,
                    logger_object=log_object)
 
         # End LCD
         if main_settings['lcd'] == 'true':
-            objLcd.text("STOP PROGRAM", 3)
+            obj_lcd.text("STOP PROGRAM", 3)
             time.sleep(5)
-            objLcd.stop()
+            obj_lcd.stop()
         # End Button
         if main_settings['button'] == 'true':
             obj_button.stop()

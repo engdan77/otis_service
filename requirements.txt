@@ -4,3 +4,4 @@ Adafruit_DHT==1.4.0
 python_memcached==1.59
 pexpect==4.6.0
 sms==0.4
+paho-mqtt
