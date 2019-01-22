@@ -2162,7 +2162,7 @@ class Luxmeter:
         self.pause = pause
         self.debug = debug
         self.gain = 0  # no gain preselected
-        self.i2c.write8(0x39, 0x00 | 0x80, 0x03)     # enable the device
+        self.i2c.write8(0x80, 0x03)     # enable the device
 
     def set_gain(self, gain=1):
         """ Set the gain """
