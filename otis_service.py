@@ -315,7 +315,7 @@ class TriggerListener:
     """ Daemon used for listening for request to trigger events from server """
 
     def __init__(self, port, queue=None):
-        self.server = ThreadedTCPServer(port, ThreadedTCPRequestHandler, self.queue)
+        self.server = ThreadedTCPServer(port, ThreadedTCPRequestHandler, queue)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         import Queue
 
