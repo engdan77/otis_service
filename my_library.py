@@ -2155,7 +2155,8 @@ class Luxmeter:
     i2c = None
 
     def __init__(self, address=0x39, debug=0, pause=0.8):
-        from Adafruit_I2C import Adafruit_I2C
+        # from Adafruit_I2C import Adafruit_I2C
+        import Adafruit_GPIO.I2C as Adafruit_I2C
         self.i2c = Adafruit_I2C(address)
         self.address = address
         self.pause = pause
