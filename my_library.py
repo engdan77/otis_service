@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/otis_service
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160725.1240 $"
+__version__ = "$Revision: 20190122.1241 $"
 
 import SocketServer
 import sys
@@ -2313,8 +2313,11 @@ class LuxMeter(threading.Thread):
         while self.running:
             # Get new value
             new_value = int(read_lux_meter())
+            import q; q(new_value)
             if new_value > 50:
                 new_value = 50
+            import q; q(new_value, self.value, self.limit)
+            q((new_value > self.value + self.limit) or (new_value < self.value - self.limit))
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
                     self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))
