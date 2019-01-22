@@ -9,6 +9,8 @@ __version__ = "$Revision: 20160725.1240 $"
 import SocketServer
 import sys
 import threading
+import smbus
+import time
 
 
 def get_datetime():
@@ -2151,6 +2153,27 @@ def PiCamera(filename, res=None):
         camera.stop_preview()
 
 
+def read_lux_meter():
+    # Get I2C bus
+    bus = smbus.SMBus(1)
+
+    bus.write_byte_data(0x39, 0x00 | 0x80, 0x03)
+    bus.write_byte_data(0x39, 0x01 | 0x80, 0x02)
+
+    time.sleep(0.5)
+    data = bus.read_i2c_block_data(0x39, 0x0C | 0x80, 2)
+    data1 = bus.read_i2c_block_data(0x39, 0x0E | 0x80, 2)
+
+    # Convert the data
+    ch0 = data[1] * 256 + data[0]
+    ch1 = data1[1] * 256 + data1[0]
+
+    # Output data to screen
+    # print "Full Spectrum(IR + Visible) :%d lux" % ch0
+    # print "Infrared Value :%d lux" % ch1
+    # print "Visible Value :%d lux" % (ch0 - ch1)
+    return ch0
+
 class Luxmeter:
     i2c = None
 
@@ -2280,7 +2303,7 @@ class LuxMeter(threading.Thread):
 
         self.running = True
         # Get initial status and supply to queue
-        self.value = int(self.luxmeter.get_lux())
+        self.value = int(read_lux_meter())
         if self.value > 50:
             self.value = 50
 
@@ -2289,7 +2312,7 @@ class LuxMeter(threading.Thread):
 
         while self.running:
             # Get new value
-            new_value = int(self.luxmeter.get_lux())
+            new_value = int(read_lux_meter())
             if new_value > 50:
                 new_value = 50
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
