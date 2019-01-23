@@ -15,7 +15,7 @@ import paho.mqtt
 
 from my_library import *
 
-__version__ = "$Revision: 20190122.717 $"
+__version__ = "$Revision: 20190123.724 $"
 
 CONFIG_FILE = "otis_service.conf"
 
@@ -286,6 +286,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             pass
         else:
             self.server.queue.put(data)
+            import q; q('put ThreadedTCPRequestHandler')
+            import q; q(data)
             response = "ok"
             self.request.sendall(response)
             # print self.server.queue
@@ -513,7 +515,7 @@ class TriggerQueueHandler(threading.Thread):
                                    client_id=device_id,
                                    auth=mqtt_auth)
 
-                self.queue.task_done()
+                # self.queue.task_done()
                 time.sleep(0.5)
 
     def stop(self):
@@ -620,6 +622,7 @@ class SensorCheck(threading.Thread):
                     lux_status = sensor.get()
                     if len(lux_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 7, 'data': lux_status}
+                        import q; q(lux_status)
                         self.queue.put(result)
             time.sleep(0.1)
 
@@ -728,6 +731,7 @@ def start_loop(mode='client', queue=None, **kwargs):
         print("Client started and monitoring sensors: " + str(kwargs['sensors']))
 
     # Wait for key to abort
+    '''
     print("Press Enter to exit")
     raw_input()
 
@@ -738,6 +742,7 @@ def start_loop(mode='client', queue=None, **kwargs):
         obj_sensor_check.stop()
     # Exit loop
     print("Aborted")
+    '''
 
 
 def get_enabled_sensors(config_object, log_object=None):

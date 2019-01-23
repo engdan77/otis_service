@@ -4,7 +4,7 @@
 # URL: https://github.com/engdan77/otis_service
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20190122.1241 $"
+__version__ = "$Revision: 20190123.1251 $"
 
 import SocketServer
 import sys
@@ -1017,7 +1017,9 @@ class PirMotion(threading.Thread):
                         self.all_motions.append(motion_time)
                 else:
                     self.all_motions.append(motion_time)
-        return self.all_motions
+        r = self.all_motions
+        self.all_motions = []
+        return r
 
 
 class Switch(threading.Thread):
@@ -1110,7 +1112,9 @@ class Switch(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 class DHT(threading.Thread):
@@ -1179,6 +1183,9 @@ class DHT(threading.Thread):
             verified = [changed(self.value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i in range(1, self.verify_times)]
 
             # print "debug: type %s ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (self.type, new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
+            condition = ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified)
+            import q; q(condition)
+
             if ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified):
                 if self.objLog:
                     # noinspection PyPep8
@@ -1187,6 +1194,7 @@ class DHT(threading.Thread):
                     print 'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value)
                 self.value = new_value
                 epoch = int(time.time())
+                import q; q('adding dht to queue')
                 self.queue.put((epoch, self.value))
             # Pause for next poll
             time.sleep(self.check_int)
@@ -1210,7 +1218,9 @@ class DHT(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 def readadc(adcnum, clockpin=18, mosipin=24, misopin=23, cspin=25):
@@ -1549,7 +1559,9 @@ class AdcMeter(McpValue):
                         self.all_status.append(value_status)
                 else:
                     self.all_status.append(value_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 def EpochToDate(arg_epoch):
@@ -2348,7 +2360,9 @@ class LuxMeter(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 class ModemDongle(threading.Thread):
