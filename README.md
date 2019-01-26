@@ -433,10 +433,10 @@ Adding sensors
 
 ex.
 
-	class edoSwitch(threading.Thread):
+	class Switch(threading.Thread):
 	    '''
 	    Class object to handle door switch
-	    object = edoSwitch(pin=18, check_int=0.5, log_object)
+	    object = Switch(pin=18, check_int=0.5, log_object)
 	    '''
 	    def __init__(self, logger_object=None, **kwargs):
 		threading.Thread.__init__(self)
@@ -510,7 +510,7 @@ ex.
 	if logger_object.get('sensor_motionpir', 'enable') == 'true':
 	    pin = logger_object.get('sensor_motionpir', 'pin')
 	    # interval = logger_object.get('sensor_motionpir', 'interval')
-	    sensor_motionpir = edoPirMotion(log_object, pin=int(pin))
+	    sensor_motionpir = PirMotion(log_object, pin=int(pin))
 	    sensors.append(sensor_motionpir)
 	if logger_object.get('sensor_doorswitch', 'enable') == 'true':
 	    pin = logger_object.get('sensor_doorswitch', 'pin')
@@ -521,15 +521,15 @@ ex.
 
 	class triggerQueueHandler(threading.Thread):
 	...
-	print edoGetDateTime() + ": Handling trigger in queue " + str(trigger)
+	print GetDateTime() + ": Handling trigger in queue " + str(trigger)
 	if attr_id == 1:
 	    # Motion Pir
-	    date = edoEpochToDate(data[0])
+	    date = epoch_to_date(data[0])
 	    db_data = "Motion"
 	    alert = date + ",id=" + str(device_id) + ": Motion Detected"
 	elif attr_id == 2:
 	    # Door switch
-	    date = edoEpochToDate(data[0][0])
+	    date = epoch_to_date(data[0][0])
 	    db_data = "Door " + data[0][1]
 	    alert = date + ",id=" + str(device_id) + ": " + db_data
 
@@ -544,7 +544,7 @@ ex.
 	# Start Loop
 	for sensor in self.sensorList:
 	    # Handler for PIR MOTION
-	    if sensor.__class__.__name__ is "edoPirMotion":
+	    if sensor.__class__.__name__ is "PirMotion":
 		motions_detected = sensor.get()
 		if len(motions_detected) > 0:
 		    result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
@@ -552,7 +552,7 @@ ex.
 
 	for sensor in self.sensorList:
 	    # Handler for SWITCH
-	    if sensor.__class__.__name__ is "edoSwitch":
+	    if sensor.__class__.__name__ is "Switch":
 		switch_status = sensor.get()
 		if len(switch_status) > 0:
 		    result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
@@ -605,7 +605,7 @@ Example of Output
 -------------------------
 	pi@raspberrypi ~/otis_service $ sudo python otis_service.py --start                                                                  
 	TriggerListener loop running in thread: Thread-8                                                                                   
-	Client started and monitoring sensors: [<edoPirMotion(Thread-4, started -1293638544)>, <edoSwitch(Thread-5, started -1302027152)>] 
+	Client started and monitoring sensors: [<PirMotion(Thread-4, started -1293638544)>, <Switch(Thread-5, started -1302027152)>] 
 	Press Enter to exit                                                                                                                
 	2014-08-13 07:18:11: Handling trigger in queue {'data': [(1407907091, 'Open')], 'attr_id': 2, 'device_id': '1', 'type_id': 1}       
 	2014-08-13 07:18:19: Handling trigger in queue {'data': [1407907099], 'attr_id': 1, 'device_id': '1', 'type_id': 1}                 
@@ -643,7 +643,7 @@ Adding scheduled job to inform sensor-status by SMS when alarm is armed
 
 Add entry such as below by "crontab -e"
 
-	30 1 * * * . $HOME/.profile; cd $HOME/git/otis_service ; python ./otis_service.py --show_onoff >> /tmp/edoatuohome_cron.log
+	30 1 * * * . $HOME/.profile; cd $HOME/git/otis_service ; python ./otis_service.py --show_onoff >> /tmp/otis_cron.log
 
 You may have to adjust the path to the directory where you've downloaded this script to.
 In the above example at 1:30 every night if the alarm is activated (you not being at home) a list of sensors would be sent as sms to defined number in configuration
