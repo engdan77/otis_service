@@ -298,7 +298,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         SocketServer.TCPServer.__init__(self, server_address, request_handler_class)
 
 
-def SendSocket(ip, port, message):
+def send_socket(ip, port, message):
     """ Simple client to send data """
     import socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -428,43 +428,43 @@ class TriggerQueueHandler(threading.Thread):
                 print get_datetime() + ": Handling trigger in queue " + str(trigger)
                 if attr_id == 1:
                     # Motion Pir
-                    date = EpochToDate(data[0])
+                    date = epoch_to_date(data[0])
                     db_data = "Motion"
                     event = "motion"
                     alert = date + ",id=" + str(device_id) + ": Motion Detected"
                 elif attr_id == 2:
                     # Door switch
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = "Door " + data[0][1]
                     event = "door"
                     alert = date + ",id=" + str(device_id) + ": " + db_data
                 elif attr_id == 3:
                     # Power Meter
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = str(data[0][1])
                     event = "power"
                     alert = date + ",id=" + str(device_id) + ": " + "Power Changed " + db_data
                 elif attr_id == 4:
                     # Humidity Meter
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = str(data[0][1])
                     event = "humidity"
                     alert = date + ",id=" + str(device_id) + ": " + "Humidity Changed " + db_data
                 elif attr_id == 5:
                     # Temperature Meter
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = str(data[0][1])
                     event = "temp"
                     alert = date + ",id=" + str(device_id) + ": " + "Temperature Changed " + db_data
                 elif attr_id == 6:
                     # MQ2 Meter
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = str(data[0][1])
                     event = "smoke"
                     alert = date + ",id=" + str(device_id) + ": " + "MQ2 Changed " + db_data
                 elif attr_id == 7:
                     # LuxMeter
-                    date = EpochToDate(data[0][0])
+                    date = epoch_to_date(data[0][0])
                     db_data = str(data[0][1])
                     event = "lux"
                     alert = date + ",id=" + str(device_id) + ": " + "Lux Changed " + db_data
@@ -495,7 +495,7 @@ class TriggerQueueHandler(threading.Thread):
                     master_port = int(client_settings['master_port'])
                     send_data = json.dumps(
                         {'device_id': int(device_id), 'type_id': type_id, 'attr_id': attr_id, 'data': data})
-                    result = TriggerEvent(master_ip, master_port, send_data)
+                    result = trigger_event(master_ip, master_port, send_data)
                     if result == 'ok':
                         self.log_object.log("Event sent: " + str(send_data), 'INFO')
                     else:
@@ -632,7 +632,7 @@ class SensorCheck(threading.Thread):
         # Stop checking
 
 
-def SendJSON(ip, port):
+def send_json(ip, port):
     """ Used for diagnostic sending JSON messages to ip and port """
     import socket
     import json
@@ -648,7 +648,7 @@ def SendJSON(ip, port):
         sock.close()
 
 
-def TriggerEvent(ip, port, data):
+def trigger_event(ip, port, data):
     """ Trigger Event  """
     import socket
     import json
@@ -1065,7 +1065,7 @@ def send_reset_all_clients(alarm_list, conf):
     print get_datetime() + ": Send Reset Sensors - " + str(ips)
     if len(ips) > 0:
         for ip, port in ips:
-            TriggerEvent(str(ip), int(port), 'reset_all_sensors')
+            trigger_event(str(ip), int(port), 'reset_all_sensors')
             result = test_socket(ip, port, log_object)
             if result == 1:
                 for AlarmDev in alarm_list:
@@ -1240,7 +1240,7 @@ if __name__ == "__main__":
         data = None
         while not data == '':
             data = raw_input('Enter data: ')
-            SendSocket(ip, int(port), json.dumps(data))
+            send_socket(ip, int(port), json.dumps(data))
         sys.exit(0)
 
     if args.createdb:

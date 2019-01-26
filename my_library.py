@@ -156,14 +156,17 @@ class ClassFileLogger:
             import inspect
             try:
                 # noinspection PyPep8
-                frame, filename, line_number, function_name, lines, index = inspect.getouterframes(inspect.currentframe())[1]
+                frame, filename, line_number, function_name, lines, index = \
+                inspect.getouterframes(inspect.currentframe())[1]
                 self.oLogger.debug("Outerframe[1] " + filename + ":" + str(line_number) + " " + str(lines))
                 # noinspection PyPep8
-                frame, filename, line_number, function_name, lines, index = inspect.getouterframes(inspect.currentframe())[2]
+                frame, filename, line_number, function_name, lines, index = \
+                inspect.getouterframes(inspect.currentframe())[2]
                 self.oLogger.debug("Outerframe[2] " + filename + ":" + str(line_number) + " " + str(lines))
                 self.oLogger.debug("Outerframe[3] " + filename + ":" + str(line_number) + " " + str(lines))
                 # noinspection PyPep8
-                frame, filename, line_number, function_name, lines, index = inspect.getouterframes(inspect.currentframe())[4]
+                frame, filename, line_number, function_name, lines, index = \
+                inspect.getouterframes(inspect.currentframe())[4]
                 self.oLogger.debug("Outerframe[4] " + filename + ":" + str(line_number) + " " + str(lines))
             except IndexError:
                 self.oLogger.debug("Debug, stack index out of range")
@@ -203,7 +206,8 @@ class ClassDB:
             import MySQLdb
             host, port, user, passwd, db = self.dbconnect
             # noinspection PyPep8
-            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db, connection_timeout=120, buffered=True)
+            connection = MySQLdb.connect(host=host, port=int(port), user=user, passwd=passwd, db=db,
+                                         connection_timeout=120, buffered=True)
             # noinspection PyPep8
             if self.oLogger: self.oLogger.log('Connected to mysql ' + str(self.dbconnect), 'INFO')
             auto_keyword = 'AUTO_INCREMENT'
@@ -216,7 +220,7 @@ class ClassDB:
         def create_table(name, idcolumn, tabledef):
             try:
                 sql = "CREATE TABLE " + name + \
-                    "(" + idcolumn + " " + tabledef + ")"
+                      "(" + idcolumn + " " + tabledef + ")"
                 cursor.execute(sql)
             except Exception as value:
                 # noinspection PyPep8
@@ -229,7 +233,7 @@ class ClassDB:
         def create_column(name, columnname, columndef):
             try:
                 sql = "ALTER TABLE " + name + " ADD COLUMN " + \
-                    columnname + " " + columndef
+                      columnname + " " + columndef
 
                 cursor.execute(sql)
             except Exception as value:
@@ -260,7 +264,9 @@ class ClassDB:
             if self.dbtype == 'sqlite':
                 connection.create_function('FIXENCODING', 1, lambda s: str(s).decode('latin-1'))
                 # noinspection PyPep8
-                connection.execute("UPDATE " + table_column[0] + " SET " + table_column[1] + "=FIXENCODING(CAST(" + table_column[1] + " AS BLOB))")
+                connection.execute(
+                    "UPDATE " + table_column[0] + " SET " + table_column[1] + "=FIXENCODING(CAST(" + table_column[
+                        1] + " AS BLOB))")
 
         connection.close()
         # noinspection PyPep8
@@ -794,11 +800,13 @@ class Process:
     Class to start a subprocess
     example: command = edoProcess("/bin/sh", "-c", "while true; do omxplayer " + self.song + " ; done")
     """
+
     def __init__(self, *args):
         import subprocess
         self.commands = args
         # noinspection PyPep8
-        self.process = subprocess.Popen(tuple(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.process = subprocess.Popen(tuple(args), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
         self.pid = self.process.pid
         self.stdout = self.process.stdout
         self.stderr = self.process.stderr
@@ -806,11 +814,13 @@ class Process:
     def kill(self):
         import subprocess
         # noinspection PyPep8
-        get_gpid = subprocess.Popen(['/bin/sh', '-c', 'ps x -o  "%p %r" | egrep "\s*' + str(self.pid) + '"'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        get_gpid = subprocess.Popen(['/bin/sh', '-c', 'ps x -o  "%p %r" | egrep "\s*' + str(self.pid) + '"'],
+                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         gpid = str(get_gpid.stdout.read().split()[1])
         # print("gpid: " + gpid)
         # noinspection PyPep8
-        kill_cmd = subprocess.Popen(['pkill', '-g', gpid], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        kill_cmd = subprocess.Popen(['pkill', '-g', gpid], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
         print kill_cmd.stdout.read()
         # print kill_cmd.stderr.read()
 
@@ -820,6 +830,7 @@ class Lcd(threading.Thread):
     Class object to display text on lcd-display
     lcd = edoLcd(sleep_time=0.5)
     """
+
     def __init__(self, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         import Queue
@@ -947,6 +958,7 @@ class PirMotion(threading.Thread):
     Class object to handle pir motion sensor
     object = edoPirMotion(pin=4, check_int=0.5, log_object)
     """
+
     def __init__(self, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         self.all_motions = []
@@ -1027,6 +1039,7 @@ class Switch(threading.Thread):
     Class object to handle door switch
     object = edoSwitch(pin=18, check_int=0.5, log_object)
     """
+
     def __init__(self, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         self.all_status = []
@@ -1122,6 +1135,7 @@ class DHT(threading.Thread):
     Class object to read temp or humid from DHT_11 sensor
     object = edoDHT_humid(pin=4, limit=1, check_int=10, type=0(humid)/1(temp), log_object)
     """
+
     def __init__(self, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         self.all_status = []
@@ -1180,21 +1194,26 @@ class DHT(threading.Thread):
 
             # Read and ignore miss-readings
             # noinspection PyPep8
-            verified = [changed(self.value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i in range(1, self.verify_times)]
+            verified = [changed(self.value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i
+                        in range(1, self.verify_times)]
 
             # print "debug: type %s ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (self.type, new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
-            condition = ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified)
-            import q; q(condition)
+            condition = ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(
+                verified)
+            import q;
+            q(condition)
 
             if ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified):
                 if self.objLog:
                     # noinspection PyPep8
-                    self.objLog.log('DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value))
+                    self.objLog.log(
+                        'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value))
                 else:
                     print 'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value)
                 self.value = new_value
                 epoch = int(time.time())
-                import q; q('adding dht to queue')
+                import q;
+                q('adding dht to queue')
                 self.queue.put((epoch, self.value))
             # Pause for next poll
             time.sleep(self.check_int)
@@ -1236,36 +1255,36 @@ def readadc(adcnum, clockpin=18, mosipin=24, misopin=23, cspin=25):
     GPIO.setup(cspin, GPIO.OUT)
 
     if (adcnum > 7) or (adcnum < 0):
-            return -1
+        return -1
     GPIO.output(cspin, True)
 
     GPIO.output(clockpin, False)  # start clock low
-    GPIO.output(cspin, False)     # bring CS low
+    GPIO.output(cspin, False)  # bring CS low
 
     commandout = adcnum
     commandout |= 0x18  # start bit + single-ended bit
-    commandout <<= 3    # we only need to send 5 bits here
+    commandout <<= 3  # we only need to send 5 bits here
     for i in range(5):
-            if commandout & 0x80:
-                    GPIO.output(mosipin, True)
-            else:
-                    GPIO.output(mosipin, False)
-            commandout <<= 1
-            GPIO.output(clockpin, True)
-            GPIO.output(clockpin, False)
+        if commandout & 0x80:
+            GPIO.output(mosipin, True)
+        else:
+            GPIO.output(mosipin, False)
+        commandout <<= 1
+        GPIO.output(clockpin, True)
+        GPIO.output(clockpin, False)
 
     adcout = 0
     # read in one empty bit, one null bit and 10 ADC bits
     for i in range(12):
-            GPIO.output(clockpin, True)
-            GPIO.output(clockpin, False)
-            adcout <<= 1
-            if GPIO.input(misopin):
-                    adcout |= 0x1
+        GPIO.output(clockpin, True)
+        GPIO.output(clockpin, False)
+        adcout <<= 1
+        if GPIO.input(misopin):
+            adcout |= 0x1
 
     GPIO.output(cspin, True)
 
-    adcout >>= 1       # first bit is 'null' so drop it
+    adcout >>= 1  # first bit is 'null' so drop it
     return adcout
 
 
@@ -1276,6 +1295,7 @@ class McpValue(threading.Thread):
         object = edoMCPvalue(minref, adc_in, **kwargs)
         object = edoMCPvalue(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, check_times=100, logger_object=logger_object)
         """
+
     def __init__(self, minref=510, adc_in=0, **kwargs):
         threading.Thread.__init__(self)
         import Queue
@@ -1326,7 +1346,8 @@ class McpValue(threading.Thread):
                 count_val = count
                 if debug is True:
                     # noinspection PyPep8
-                    print 'MIN_REF: %s, AVG: (%s/%s)/1023=%s%%, MAX: (%s-%s)/1023=%s%%, COUNT: %s' % (minref, result, count, avg_val, peak, minref, max_val, count_val)
+                    print 'MIN_REF: %s, AVG: (%s/%s)/1023=%s%%, MAX: (%s-%s)/1023=%s%%, COUNT: %s' % (
+                    minref, result, count, avg_val, peak, minref, max_val, count_val)
                 # Return value
                 return avg_val, max_val, count
             else:
@@ -1345,6 +1366,7 @@ class PowerMeter(McpValue):
         object = edoPowerMeter(minref, adc_in, **kwargs)
         object = edoPowerMeter(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, logger_object=logger_object)
         """
+
     def __init__(self, minref, adc_in, **kwargs):
         self.all_status = []
         import Queue
@@ -1394,7 +1416,8 @@ class PowerMeter(McpValue):
         self.running = True
         # Get initial status and supply to queue
         # noinspection PyPep8
-        self.avg_val, self.max_val, self.count = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)
+        self.avg_val, self.max_val, self.count = self.poll_value(self.minref, self.adc_in, debug=self.debug,
+                                                                 sleep_int=0.000001, max_retry=10)
         epoch = int(time.time())
         self.queue.put((epoch, self.avg_val))
 
@@ -1414,12 +1437,15 @@ class PowerMeter(McpValue):
                         '''
             # For Max
             # noinspection PyPep8
-            current_power = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[1]
+            current_power = \
+            self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[1]
 
             # Returns a list of True/False based on verify_times used to
             # determine false switch
             # noinspection PyPep8
-            verified = [changed(self.max_val, self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[1], self.limit) for i in range(1, self.verify_times)]
+            verified = [changed(self.max_val,
+                                self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001,
+                                                max_retry=10)[1], self.limit) for i in range(1, self.verify_times)]
 
             if changed(self.max_val, current_power, self.limit) and all(verified):
                 self.max_val = current_power
@@ -1465,6 +1491,7 @@ class AdcMeter(McpValue):
         object = edoADCmeter(adc_in, **kwargs)
         object = edoADCmeter(0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, pause_int=1, logger_object=logger_object)
         """
+
     def __init__(self, adc_in=0, **kwargs):
         self.all_status = []
         import Queue
@@ -1516,7 +1543,8 @@ class AdcMeter(McpValue):
         self.running = True
         # Get initial status and supply to queue
         # noinspection PyPep8
-        self.avg_val, self.max_val, self.count = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=1, max_retry=1)
+        self.avg_val, self.max_val, self.count = self.poll_value(self.minref, self.adc_in, debug=self.debug,
+                                                                 sleep_int=1, max_retry=1)
         epoch = int(time.time())
         self.queue.put((epoch, self.avg_val))
 
@@ -1564,18 +1592,11 @@ class AdcMeter(McpValue):
         return r
 
 
-def EpochToDate(arg_epoch):
+def epoch_to_date(arg_epoch):
     """ Function to convert epoch to DateTime """
     import time
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(arg_epoch)))
 
-        device_type = 'edoADCpercantage'
-        if not os.geteuid() == 0:
-            if self.objLog:
-                self.objLog.log('%s - has to be run as root' % device_type, 'CRITICAL')
-            else:
-                print('%s - has to be run as root' % device_type)
-            return 1
 
 def get_local_ip():
     """ Returns local IP-address """
@@ -1594,6 +1615,7 @@ class Button(threading.Thread):
     Class object to handle button
     object = edoButton(3, {1: [function1,args], 2: [function2,args]}, pin=22, check_int=0.1, log_object)
     """
+
     def __init__(self, timeout=1, functions=None, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         import RPi.GPIO as io
@@ -1669,6 +1691,7 @@ class Led(threading.Thread):
     Class object to blink led in background
     object = edoLed(pin=25, check_int=0.1, log_object)
     """
+
     def __init__(self, blink_type=None, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         import RPi.GPIO as io
@@ -1772,6 +1795,7 @@ class Buzzer(threading.Thread):
     Class object to make noise with piezo speaker
     object = edoBuzzer(pin=27, check_int=0.1, log_object)
     """
+
     def __init__(self, buzz_type=None, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         import RPi.GPIO as io
@@ -1970,6 +1994,7 @@ class Gmail:
     """
     Class object to queue and send gmail
     """
+
     def __init__(self, arg_user, arg_pass, arg_from=None, arg_server=None, arg_port=None, logger_object=None):
         self.objLog = logger_object
         self.running = False
@@ -2063,6 +2088,7 @@ class Gmail:
 # noinspection PyMethodMayBeStatic
 class FTP(threading.Thread):
     """ Class for using FTP """
+
     def __init__(self, ftp_server, ftp_user, ftp_pass, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         self.ftp = ftplib.FTP()
@@ -2085,6 +2111,7 @@ class FTP(threading.Thread):
 
     def chdir(self, ftp_path, ftp_conn):
         """ function to iterate through dirs using ftplib """
+
         def check_dir(dir, ftp_conn):
             """ Assure all dirs exists """
             filelist = []
@@ -2096,6 +2123,7 @@ class FTP(threading.Thread):
             if not found:
                 ftp_conn.mkd(dir)
             ftp_conn.cwd(dir)
+
         dirs = [d for d in ftp_path.split('/') if d != '']
         for p in dirs:
             check_dir(p, ftp_conn)
@@ -2126,7 +2154,8 @@ class FTP(threading.Thread):
                             if next_file_dir is not None: self.chdir(next_file_dir, self.ftp)
                             if next_file_dir is not None:
                                 # noinspection PyPep8
-                                self.ftp.retrbinary("RETR " + ftpFile, open(os.path.dirname(next_file_dir) + "/" + os.path.basename(ftpFile), 'wb').write)
+                                self.ftp.retrbinary("RETR " + ftpFile, open(
+                                    os.path.dirname(next_file_dir) + "/" + os.path.basename(ftpFile), 'wb').write)
                             else:
                                 self.ftp.retrbinary("RETR " + ftpFile, open(os.path.basename(ftpFile), 'wb').write)
                     if self.objLog:
@@ -2193,6 +2222,7 @@ def read_lux_meter():
     # print "Visible Value :%d lux" % (ch0 - ch1)
     return ch0
 
+
 class Luxmeter:
     i2c = None
 
@@ -2204,7 +2234,7 @@ class Luxmeter:
         self.pause = pause
         self.debug = debug
         self.gain = 0  # no gain preselected
-        self.i2c.write8(0x80, 0x03)     # enable the device
+        self.i2c.write8(0x80, 0x03)  # enable the device
 
     def set_gain(self, gain=1):
         """ Set the gain """
@@ -2262,8 +2292,8 @@ class Luxmeter:
             ir = self.read_ir()
 
         if self.gain == 1:
-            ambient *= 16    # scale 1x to 16x
-            ir *= 16         # scale 1x to 16x
+            ambient *= 16  # scale 1x to 16x
+            ir *= 16  # scale 1x to 16x
 
         try:
             ratio = (ir / float(ambient))  # changed to make it run under python
@@ -2271,8 +2301,8 @@ class Luxmeter:
             ratio = 0
 
         if self.debug:
-                print "IR Result", ir
-                print "Ambient Result", ambient
+            print "IR Result", ir
+            print "Ambient Result", ambient
         if (ratio >= 0) & (ratio <= 0.52):
             lux = (0.0315 * ambient) - (0.0593 * ambient * (ratio ** 1.4))
         elif ratio <= 0.65:
@@ -2291,6 +2321,7 @@ class LuxMeter(threading.Thread):
     Class object to read lux from a TSL2561
     object = edoLuxMeter(limit=1, check_int=10, log_object)
     """
+
     def __init__(self, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
         self.all_status = []
@@ -2332,10 +2363,12 @@ class LuxMeter(threading.Thread):
         while self.running:
             # Get new value
             new_value = int(read_lux_meter())
-            import q; q(new_value)
+            import q;
+            q(new_value)
             if new_value > 50:
                 new_value = 50
-            import q; q(new_value, self.value, self.limit)
+            import q;
+            q(new_value, self.value, self.limit)
             q((new_value > self.value + self.limit) or (new_value < self.value - self.limit))
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
@@ -2479,7 +2512,8 @@ class ModemDongle(threading.Thread):
                                 result = cmd_func(*args)
                                 if self.objLog:
                                     # noinspection PyPep8
-                                    self.objLog.log('Sending message to %s with body: %s' % (sms.number, str(result)), 'INFO')
+                                    self.objLog.log('Sending message to %s with body: %s' % (sms.number, str(result)),
+                                                    'INFO')
                                 else:
                                     print 'Sending SMS to %s with body: %s' % (sms.number, str(result)[:50])
                                 self.send(sms.number, str(result))
@@ -2507,13 +2541,15 @@ class ModemDongle(threading.Thread):
                 if len(message) > 160:
                     if self.objLog:
                         # noinspection PyPep8
-                        self.objLog.log('Sending parial message 160-320 to %s: %s' % (number, str(message)[160:][:160]), 'INFO')
+                        self.objLog.log('Sending parial message 160-320 to %s: %s' % (number, str(message)[160:][:160]),
+                                        'INFO')
                     time.sleep(10)
                     self.m.send(number, str(message)[160:][:160])
                     if len(message) > 320:
                         if self.objLog:
                             # noinspection PyPep8
-                            self.objLog.log('Sending parial message 320-480 to %s: %s' % (number, str(message)[320:][:160]), 'INFO')
+                            self.objLog.log(
+                                'Sending parial message 320-480 to %s: %s' % (number, str(message)[320:][:160]), 'INFO')
                         time.sleep(10)
                         self.m.send(number, str(message)[320:][:160])
 
@@ -2530,6 +2566,7 @@ class ModemDongle(threading.Thread):
 
 class DongleTCPRequestHandler(SocketServer.BaseRequestHandler):
     """ BaseRequestHandler uses TCPserver and does the actual work """
+
     def handle(self):
         import json
 
