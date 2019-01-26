@@ -9,9 +9,7 @@ import Queue
 import argparse
 import json
 import os
-import time
 import paho.mqtt.publish as publish
-import paho.mqtt
 
 from my_library import *
 
