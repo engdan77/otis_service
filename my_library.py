@@ -1200,9 +1200,6 @@ class DHT(threading.Thread):
             # print "debug: type %s ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (self.type, new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
             condition = ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(
                 verified)
-            import q;
-            q(condition)
-
             if ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified):
                 if self.objLog:
                     # noinspection PyPep8
@@ -1212,8 +1209,6 @@ class DHT(threading.Thread):
                     print 'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value)
                 self.value = new_value
                 epoch = int(time.time())
-                import q;
-                q('adding dht to queue')
                 self.queue.put((epoch, self.value))
             # Pause for next poll
             time.sleep(self.check_int)
@@ -2351,13 +2346,8 @@ class LuxMeter(threading.Thread):
         while self.running:
             # Get new value
             new_value = int(read_lux_meter())
-            import q;
-            q(new_value)
             if new_value > 50:
                 new_value = 50
-            import q;
-            q(new_value, self.value, self.limit)
-            q((new_value > self.value + self.limit) or (new_value < self.value - self.limit))
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
                     self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))
