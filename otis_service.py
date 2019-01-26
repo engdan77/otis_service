@@ -284,8 +284,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             pass
         else:
             self.server.queue.put(data)
-            import q; q('put ThreadedTCPRequestHandler')
-            import q; q(data)
+
+
             response = "ok"
             self.request.sendall(response)
             # print self.server.queue
@@ -401,8 +401,6 @@ class TriggerQueueHandler(threading.Thread):
         while self.running:
             if not self.queue.empty():
                 trigger = self.queue.get()
-                import q; q(self.queue.qsize())
-
                 # Check if "reset_all_sensors" are recieved
                 if trigger == "reset_all_sensors":
                     for sensor in self.sensorList:
@@ -410,7 +408,6 @@ class TriggerQueueHandler(threading.Thread):
                             self.log_object.log("Resetting Sensor: " + str(sensor), 'INFO')
                             sensor.reset()
                     continue
-
                 # If data comes as json
                 if str(type(trigger)) == "<type 'unicode'>":
                     try:
@@ -567,8 +564,8 @@ class SensorCheck(threading.Thread):
     def run(self):
         """ Actual handler for checking sensor(s) """
         import time
-        # import q; q.d()
-        # import q; q(self.running)
+
+
 
         while self.running:
             # Start Loop
@@ -620,7 +617,7 @@ class SensorCheck(threading.Thread):
                     lux_status = sensor.get()
                     if len(lux_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 7, 'data': lux_status}
-                        import q; q(lux_status)
+
                         self.queue.put(result)
             time.sleep(0.1)
 
