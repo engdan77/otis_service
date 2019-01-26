@@ -15,7 +15,7 @@ import paho.mqtt
 
 from my_library import *
 
-__version__ = "$Revision: 20160725.708 $"
+__version__ = "$Revision: 20190123.724 $"
 
 CONFIG_FILE = "otis_service.conf"
 
@@ -286,6 +286,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             pass
         else:
             self.server.queue.put(data)
+            import q; q('put ThreadedTCPRequestHandler')
+            import q; q(data)
             response = "ok"
             self.request.sendall(response)
             # print self.server.queue
@@ -315,7 +317,7 @@ class TriggerListener:
     """ Daemon used for listening for request to trigger events from server """
 
     def __init__(self, port, queue=None):
-        self.server = ThreadedTCPServer((self.host, self.port), ThreadedTCPRequestHandler, self.queue)
+        self.server = ThreadedTCPServer(('0.0.0.0', port), ThreadedTCPRequestHandler, queue)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         import Queue
 
@@ -380,7 +382,7 @@ class TriggerQueueHandler(threading.Thread):
     def __init__(self, mode, queue, **kwargs):
         threading.Thread.__init__(self)
         self.running = True
-        self.running = False
+        # self.running = False
         self.queue = queue
         self.objLcd = kwargs['lcd']
         self.mode = mode
@@ -401,6 +403,7 @@ class TriggerQueueHandler(threading.Thread):
         while self.running:
             if not self.queue.empty():
                 trigger = self.queue.get()
+                import q; q(self.queue.qsize())
 
                 # Check if "reset_all_sensors" are recieved
                 if trigger == "reset_all_sensors":
@@ -505,13 +508,14 @@ class TriggerQueueHandler(threading.Thread):
                     message = 'otis/{}/{}'.format(device_id, event)
                     mqtt_broker = mqtt_client_settings['mqtt_broker']
                     mqtt_auth = {'username': mqtt_client_settings['mqtt_user'],
-                                 'password': mqtt_client_settings['mqtt_password']}
+                                 'password': mqtt_client_settings['mqtt_pass']}
                     publish.single(message,
                                    db_data,
                                    hostname=mqtt_broker,
                                    client_id=device_id,
                                    auth=mqtt_auth)
 
+                # self.queue.task_done()
                 time.sleep(0.5)
 
     def stop(self):
@@ -553,7 +557,7 @@ class SensorCheck(threading.Thread):
     def __init__(self, queue, device_id, sensor_list):
         threading.Thread.__init__(self)
         self.running = True
-        self.running = False
+        # self.running = False
         self.queue = queue
         self.sensorList = sensor_list
         self.device_id = device_id
@@ -565,32 +569,34 @@ class SensorCheck(threading.Thread):
     def run(self):
         """ Actual handler for checking sensor(s) """
         import time
+        # import q; q.d()
+        # import q; q(self.running)
 
         while self.running:
             # Start Loop
             for sensor in self.sensorList:
                 # Handler for PIR MOTION
-                if sensor.__class__.__name__ is "edoPirMotion":
+                if sensor.__class__.__name__ is "PirMotion":
                     motions_detected = sensor.get()
                     if len(motions_detected) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
                         self.queue.put(result)
             for sensor in self.sensorList:
                 # Handler for SWITCH
-                if sensor.__class__.__name__ is "edoSwitch":
+                if sensor.__class__.__name__ is "Switch":
                     switch_status = sensor.get()
                     if len(switch_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
                         self.queue.put(result)
             for sensor in self.sensorList:
                 # Handler for SWITCH
-                if sensor.__class__.__name__ is "edoPowerMeter":
+                if sensor.__class__.__name__ is "PowerMeter":
                     power_status = sensor.get()
                     if len(power_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 3, 'data': power_status}
                         self.queue.put(result)
             for sensor in self.sensorList:
-                if sensor.__class__.__name__ is "edoDHT":
+                if sensor.__class__.__name__ is "DHT":
                     # Handler for DHT11_humid
                     if sensor.type == 0:
                         dht_humid_status = sensor.get()
@@ -605,17 +611,18 @@ class SensorCheck(threading.Thread):
                             self.queue.put(result)
             for sensor in self.sensorList:
                 # Handler for MQ2
-                if sensor.__class__.__name__ is "edoADCmeter":
+                if sensor.__class__.__name__ is "AdcMeter":
                     adc_status = sensor.get()
                     if len(adc_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 6, 'data': adc_status}
                         self.queue.put(result)
             for sensor in self.sensorList:
-                # Handler for MQ2
-                if sensor.__class__.__name__ is "edoLuxMeter":
+                # Handler for LuxMeter
+                if sensor.__class__.__name__ is "LuxMeter":
                     lux_status = sensor.get()
                     if len(lux_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 7, 'data': lux_status}
+                        import q; q(lux_status)
                         self.queue.put(result)
             time.sleep(0.1)
 
@@ -724,6 +731,7 @@ def start_loop(mode='client', queue=None, **kwargs):
         print("Client started and monitoring sensors: " + str(kwargs['sensors']))
 
     # Wait for key to abort
+    '''
     print("Press Enter to exit")
     raw_input()
 
@@ -734,6 +742,7 @@ def start_loop(mode='client', queue=None, **kwargs):
         obj_sensor_check.stop()
     # Exit loop
     print("Aborted")
+    '''
 
 
 def get_enabled_sensors(config_object, log_object=None):

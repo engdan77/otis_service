@@ -4,11 +4,13 @@
 # URL: https://github.com/engdan77/otis_service
 # Author: Daniel Engvall (daniel@engvalls.eu)
 
-__version__ = "$Revision: 20160725.1240 $"
+__version__ = "$Revision: 20190123.1251 $"
 
 import SocketServer
 import sys
 import threading
+import smbus
+import time
 
 
 def get_datetime():
@@ -1015,7 +1017,9 @@ class PirMotion(threading.Thread):
                         self.all_motions.append(motion_time)
                 else:
                     self.all_motions.append(motion_time)
-        return self.all_motions
+        r = self.all_motions
+        self.all_motions = []
+        return r
 
 
 class Switch(threading.Thread):
@@ -1108,7 +1112,9 @@ class Switch(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 class DHT(threading.Thread):
@@ -1177,6 +1183,9 @@ class DHT(threading.Thread):
             verified = [changed(self.value, Adafruit_DHT.read_retry(self.sensor, self.pin)[self.type], self.limit) for i in range(1, self.verify_times)]
 
             # print "debug: type %s ((%s > %s + %s) or (%s < %s - %s)) and (%s)" % (self.type, new_value, self.value, self.limit, new_value, self.value, self.limit, verified)
+            condition = ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified)
+            import q; q(condition)
+
             if ((new_value > self.value + self.limit) or (new_value < self.value - self.limit)) and all(verified):
                 if self.objLog:
                     # noinspection PyPep8
@@ -1185,6 +1194,7 @@ class DHT(threading.Thread):
                     print 'DHT Type %s exceeds limit of %s, new value %s' % (self.type, self.limit, new_value)
                 self.value = new_value
                 epoch = int(time.time())
+                import q; q('adding dht to queue')
                 self.queue.put((epoch, self.value))
             # Pause for next poll
             time.sleep(self.check_int)
@@ -1208,7 +1218,9 @@ class DHT(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 def readadc(adcnum, clockpin=18, mosipin=24, misopin=23, cspin=25):
@@ -1547,7 +1559,9 @@ class AdcMeter(McpValue):
                         self.all_status.append(value_status)
                 else:
                     self.all_status.append(value_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 def EpochToDate(arg_epoch):
@@ -1555,6 +1569,13 @@ def EpochToDate(arg_epoch):
     import time
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(arg_epoch)))
 
+        device_type = 'edoADCpercantage'
+        if not os.geteuid() == 0:
+            if self.objLog:
+                self.objLog.log('%s - has to be run as root' % device_type, 'CRITICAL')
+            else:
+                print('%s - has to be run as root' % device_type)
+            return 1
 
 def get_local_ip():
     """ Returns local IP-address """
@@ -2151,12 +2172,34 @@ def PiCamera(filename, res=None):
         camera.stop_preview()
 
 
+def read_lux_meter():
+    # Get I2C bus
+    bus = smbus.SMBus(1)
+
+    bus.write_byte_data(0x39, 0x00 | 0x80, 0x03)
+    bus.write_byte_data(0x39, 0x01 | 0x80, 0x02)
+
+    time.sleep(0.5)
+    data = bus.read_i2c_block_data(0x39, 0x0C | 0x80, 2)
+    data1 = bus.read_i2c_block_data(0x39, 0x0E | 0x80, 2)
+
+    # Convert the data
+    ch0 = data[1] * 256 + data[0]
+    ch1 = data1[1] * 256 + data1[0]
+
+    # Output data to screen
+    # print "Full Spectrum(IR + Visible) :%d lux" % ch0
+    # print "Infrared Value :%d lux" % ch1
+    # print "Visible Value :%d lux" % (ch0 - ch1)
+    return ch0
+
 class Luxmeter:
     i2c = None
 
     def __init__(self, address=0x39, debug=0, pause=0.8):
-        from Adafruit_I2C import Adafruit_I2C
-        self.i2c = Adafruit_I2C(address)
+        # from Adafruit_I2C import Adafruit_I2C
+        import Adafruit_GPIO.I2C as I2C
+        self.i2c = I2C.Device(address, 1)
         self.address = address
         self.pause = pause
         self.debug = debug
@@ -2279,7 +2322,7 @@ class LuxMeter(threading.Thread):
 
         self.running = True
         # Get initial status and supply to queue
-        self.value = int(self.luxmeter.get_lux())
+        self.value = int(read_lux_meter())
         if self.value > 50:
             self.value = 50
 
@@ -2288,9 +2331,12 @@ class LuxMeter(threading.Thread):
 
         while self.running:
             # Get new value
-            new_value = int(self.luxmeter.get_lux())
+            new_value = int(read_lux_meter())
+            import q; q(new_value)
             if new_value > 50:
                 new_value = 50
+            import q; q(new_value, self.value, self.limit)
+            q((new_value > self.value + self.limit) or (new_value < self.value - self.limit))
             if (new_value > self.value + self.limit) or (new_value < self.value - self.limit):
                 if self.objLog:
                     self.objLog.log('Luxmeter exceeds limit of %s, new value %s' % (self.limit, new_value))
@@ -2321,7 +2367,9 @@ class LuxMeter(threading.Thread):
                         self.all_status.append(switch_status)
                 else:
                     self.all_status.append(switch_status)
-        return self.all_status
+        r = self.all_status
+        self.all_status = []
+        return r
 
 
 class ModemDongle(threading.Thread):
