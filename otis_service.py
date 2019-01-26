@@ -1422,7 +1422,7 @@ if __name__ == "__main__":
         trigger_queue = Queue.Queue()
         start_loop(main_settings['mode'],
                    trigger_queue,
-                   device_id=client_settings['device_id'],
+                   device_id=client_settings['deviceid'],
                    sensors=sensors,
                    listen_port=main_settings['listen_port'],
                    lcd=obj_lcd,
