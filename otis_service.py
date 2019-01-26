@@ -729,7 +729,6 @@ def start_loop(mode='client', queue=None, **kwargs):
         print("Client started and monitoring sensors: " + str(kwargs['sensors']))
 
     # Wait for key to abort
-    '''
     print("Press Enter to exit")
     raw_input()
 
@@ -740,7 +739,7 @@ def start_loop(mode='client', queue=None, **kwargs):
         obj_sensor_check.stop()
     # Exit loop
     print("Aborted")
-    '''
+
 
 
 def get_enabled_sensors(config_object, log_object=None):
