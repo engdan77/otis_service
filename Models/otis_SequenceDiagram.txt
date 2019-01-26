@@ -2,23 +2,23 @@
 scale 2/3
 
 participant main as "__main__"
-participant log as "log_object:edoClassFileLogger"
-participant config as "logger_object:edoClassConfig"
+participant log as "log_object:ClassFileLogger"
+participant config as "logger_object:ClassConfig"
 participant sensors as "sensors:getEnabledSensors"
 participant devList as "AlarmDevList:getEnabledAlarms"
 participant sensors as "getEnabledSensors"
 participant startLoop as "startLoop()" #yellow
-database db as "objDB:edoClassDB"
+database db as "objDB:ClassDB"
 participant alarm as "alarm:alarmClass" #green
-participant gmail as "alarm_gmail:edoGmailAlarm" #lightgreen
+participant gmail as "alarm_gmail:GmailAlarm" #lightgreen
 actor owner #green
 participant triggerListener as "triggerListener:triggerQueueListener" #brown
 participant queueHandler as "objTriggerQueueHandler:triggerQueueHandler" #brown
 participant queue as "triggerQueue:Queue" #red
 participant sensorCheck as "objSensorCheck:sensorCheck" #red
-participant motion as "sensor_motionpir:edoPirMotion" #gray
-participant sensor as "sensor_doorswitch:edoSwitch" #gray
-participant power as "sensor_power:edoPowerMeter" #gray
+participant motion as "sensor_motionpir:PirMotion" #gray
+participant sensor as "sensor_doorswitch:Switch" #gray
+participant power as "sensor_power:PowerMeter" #gray
 actor thief #red
 
 == Initialisation ==
@@ -32,7 +32,7 @@ activate config
 config -> main : config
 deactivate config
 |||
-main -> db : init():edoClassDB
+main -> db : init():ClassDB
 activate db
 db -> main : db
 deactivate db
