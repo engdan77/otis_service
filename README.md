@@ -539,10 +539,10 @@ ex.
 
 ex. 
 
-	class sensorCheck(threading.Thread):
+	class SensorCheck(threading.Thread):
 	...
 	# Start Loop
-	for sensor in self.sensorList:
+	for sensor in self.sensor_list:
 	    # Handler for PIR MOTION
 	    if sensor.__class__.__name__ is "PirMotion":
 		motions_detected = sensor.get()
@@ -550,7 +550,7 @@ ex.
 		    result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
 		    self.queue.put(result)
 
-	for sensor in self.sensorList:
+	for sensor in self.sensor_list:
 	    # Handler for SWITCH
 	    if sensor.__class__.__name__ is "Switch":
 		switch_status = sensor.get()

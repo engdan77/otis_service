@@ -386,7 +386,7 @@ class TriggerQueueHandler(threading.Thread):
         self.mode = mode
         self.alarm = kwargs['alarm']
         self.db = kwargs['db']
-        self.sensorList = kwargs.get('sensors', None)
+        self.sensor_list = kwargs.get('sensors', None)
         self.log_object = kwargs.get('logger_object', None)
 
     def print_all(self):
@@ -403,7 +403,7 @@ class TriggerQueueHandler(threading.Thread):
                 trigger = self.queue.get()
                 # Check if "reset_all_sensors" are recieved
                 if trigger == "reset_all_sensors":
-                    for sensor in self.sensorList:
+                    for sensor in self.sensor_list:
                         if hasattr(sensor, 'reset'):
                             self.log_object.log("Resetting Sensor: " + str(sensor), 'INFO')
                             sensor.reset()
@@ -554,11 +554,11 @@ class SensorCheck(threading.Thread):
         self.running = True
         # self.running = False
         self.queue = queue
-        self.sensorList = sensor_list
+        self.sensor_list = sensor_list
         self.device_id = device_id
 
         # Start checking of sensors
-        for sensor in self.sensorList:
+        for sensor in self.sensor_list:
             sensor.start()
 
     def run(self):
@@ -569,28 +569,28 @@ class SensorCheck(threading.Thread):
 
         while self.running:
             # Start Loop
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 # Handler for PIR MOTION
                 if sensor.__class__.__name__ is "PirMotion":
                     motions_detected = sensor.get()
                     if len(motions_detected) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 1, 'data': motions_detected}
                         self.queue.put(result)
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 # Handler for SWITCH
                 if sensor.__class__.__name__ is "Switch":
                     switch_status = sensor.get()
                     if len(switch_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 2, 'data': switch_status}
                         self.queue.put(result)
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 # Handler for SWITCH
                 if sensor.__class__.__name__ is "PowerMeter":
                     power_status = sensor.get()
                     if len(power_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 3, 'data': power_status}
                         self.queue.put(result)
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 if sensor.__class__.__name__ is "DHT":
                     # Handler for DHT11_humid
                     if sensor.type == 0:
@@ -604,14 +604,14 @@ class SensorCheck(threading.Thread):
                         if len(dht_temp_status) > 0:
                             result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 5, 'data': dht_temp_status}
                             self.queue.put(result)
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 # Handler for MQ2
                 if sensor.__class__.__name__ is "AdcMeter":
                     adc_status = sensor.get()
                     if len(adc_status) > 0:
                         result = {'device_id': self.device_id, 'type_id': 1, 'attr_id': 6, 'data': adc_status}
                         self.queue.put(result)
-            for sensor in self.sensorList:
+            for sensor in self.sensor_list:
                 # Handler for LuxMeter
                 if sensor.__class__.__name__ is "LuxMeter":
                     lux_status = sensor.get()
@@ -624,7 +624,7 @@ class SensorCheck(threading.Thread):
     def stop(self):
         """ Stop handler """
         # Stop all sensors
-        for sensor in self.sensorList:
+        for sensor in self.sensor_list:
             sensor.stop()
         # Stop checking
 
