@@ -2078,6 +2078,7 @@ class FTP(threading.Thread):
 
     def __init__(self, ftp_server, ftp_user, ftp_pass, logger_object=None, **kwargs):
         threading.Thread.__init__(self)
+        import ftplib
         self.ftp = ftplib.FTP()
         self.ftp = ftplib.FTP()
         import Queue
