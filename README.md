@@ -665,11 +665,10 @@ Data Model
 ![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_4_database_model.png)
 
 *Class Diagram [Version: 20140809.398]*
-![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_5_ClassDiagram.jpg)
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/otis_service_ClassDiagram.png)
 
 *Sequence Diagram [Version: 20140809.398]*
-![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/IMG_6_SequenceDiagram.png)
-
+![Main Board](https://github.com/engdan77/otis_service/blob/master/pics/otis_service_SequenceDiagram.png)
 
 -------------------------
 Pictures
