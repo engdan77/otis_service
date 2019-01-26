@@ -507,7 +507,7 @@ class TriggerQueueHandler(threading.Thread):
                     publish.single(message,
                                    db_data,
                                    hostname=mqtt_broker,
-                                   client_id=device_id,
+                                   client_id=str(device_id),
                                    auth=mqtt_auth)
 
                 # self.queue.task_done()
