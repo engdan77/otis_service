@@ -329,7 +329,7 @@ class TriggerListener:
         self.host, self.port = "0.0.0.0", port
 
     def start(self):
-        # Extend edoThreadedTCPServer with queue
+        # Extend ThreadedTCPServer with queue
 
         # Returns the ip and port
         # ip, port = server.server_address
@@ -357,7 +357,7 @@ class SmsListener:
         self.port = int(port)
 
     def start(self):
-        # Extend edoThreadedTCPServer with queue
+        # Extend ThreadedTCPServer with queue
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -1069,7 +1069,7 @@ def send_reset_all_clients(alarm_list, conf):
             result = test_socket(ip, port, log_object)
             if result == 1:
                 for AlarmDev in alarm_list:
-                    if AlarmDev.__class__.__name__ is "edoBuzzer" and conf.get('alarm_buzzer', 'enable') == 'true':
+                    if AlarmDev.__class__.__name__ is "Buzzer" and conf.get('alarm_buzzer', 'enable') == 'true':
                         print get_datetime() + ": Client %s could not be reached" % (ip,)
                         log_object.log("Client %s could not be reached" % (ip,), 'DEBUG')
                         AlarmDev.buzz_on(5)
@@ -1151,14 +1151,14 @@ class Alarm:
 
             if not self.skip:
                 for AlarmDev in alarm_dev_list:
-                    if AlarmDev.__class__.__name__ is "edoBuzzer" and self.objConfig.get('alarm_buzzer',
+                    if AlarmDev.__class__.__name__ is "eBuzzer" and self.objConfig.get('alarm_buzzer',
                                                                                          'enable') == 'true':
                         print get_datetime() + ": BUZZ !!"
                         log_object.log("BUZZ !!", 'DEBUG')
                         AlarmDev.buzz_on(0.5)
                         time.sleep(0.2)
                         AlarmDev.buzz_on(0.5)
-                    if AlarmDev.__class__.__name__ is "edoGmailAlarm":
+                    if AlarmDev.__class__.__name__ is "GmailAlarm":
                         mail_body = get_datetime() + ": " + str(arg_data)
                         if check_event_in_trigger((arg_dev, arg_attr, arg_data), AlarmDev.trigger_when):
                             dev_name = get_dev_name(arg_dev, self.objDB)
@@ -1173,7 +1173,7 @@ class Alarm:
                                              mail_body, cam_shots)
                             # Upload pictrues to FTP
                             upload_all_cameras(cameras)
-                    if AlarmDev.__class__.__name__ is "edoSMSAlarm":
+                    if AlarmDev.__class__.__name__ is "SMSAlarm":
                         sms_body = get_datetime() + ": " + str(arg_data)
                         if check_event_in_trigger((arg_dev, arg_attr, arg_data), AlarmDev.trigger_when):
                             dev_name = get_dev_name(arg_dev, self.objDB)

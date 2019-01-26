@@ -798,7 +798,7 @@ def test_socket(host, port, logger_object=None):
 class Process:
     """
     Class to start a subprocess
-    example: command = edoProcess("/bin/sh", "-c", "while true; do omxplayer " + self.song + " ; done")
+    example: command = Process("/bin/sh", "-c", "while true; do omxplayer " + self.song + " ; done")
     """
 
     def __init__(self, *args):
@@ -828,7 +828,7 @@ class Process:
 class Lcd(threading.Thread):
     """
     Class object to display text on lcd-display
-    lcd = edoLcd(sleep_time=0.5)
+    lcd = Lcd(sleep_time=0.5)
     """
 
     def __init__(self, logger_object=None, **kwargs):
@@ -860,9 +860,9 @@ class Lcd(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoLcd - has to be run as root', 'CRITICAL')
+                self.objLog.log('Lcd - has to be run as root', 'CRITICAL')
             else:
-                print('edoLcd - has to be run as root')
+                print('Lcd - has to be run as root')
             return 1
 
         on, off = [1, 0]
@@ -956,7 +956,7 @@ class Lcd(threading.Thread):
 class PirMotion(threading.Thread):
     """
     Class object to handle pir motion sensor
-    object = edoPirMotion(pin=4, check_int=0.5, log_object)
+    object = PirMotion(pin=4, check_int=0.5, log_object)
     """
 
     def __init__(self, logger_object=None, **kwargs):
@@ -989,9 +989,9 @@ class PirMotion(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoPirMotion - has to be run as root', 'CRITICAL')
+                self.objLog.log('PirMotion - has to be run as root', 'CRITICAL')
             else:
-                print('edoPirMotion - has to be run as root')
+                print('PirMotion - has to be run as root')
             return 1
 
         self.running = True
@@ -999,9 +999,9 @@ class PirMotion(threading.Thread):
             # Get pir alarm
             if io.input(self.pin) and self.motion is not True:
                 if self.objLog:
-                    self.objLog.log('edoPirMotion - Motion Detected', 'INFO')
+                    self.objLog.log('PirMotion - Motion Detected', 'INFO')
                 else:
-                    print('edoPirMotion - Motion Detected')
+                    print('PirMotion - Motion Detected')
                 self.motion = True
                 epoch = int(time.time())
                 self.queue.put(epoch)
@@ -1037,7 +1037,7 @@ class PirMotion(threading.Thread):
 class Switch(threading.Thread):
     """
     Class object to handle door switch
-    object = edoSwitch(pin=18, check_int=0.5, log_object)
+    object = Switch(pin=18, check_int=0.5, log_object)
     """
 
     def __init__(self, logger_object=None, **kwargs):
@@ -1071,9 +1071,9 @@ class Switch(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoSwitch - has to be run as root', 'CRITICAL')
+                self.objLog.log('Switch - has to be run as root', 'CRITICAL')
             else:
-                print('edoSwitch - has to be run as root')
+                print('Switch - has to be run as root')
             return 1
 
         self.running = True
@@ -1089,17 +1089,17 @@ class Switch(threading.Thread):
             # Get current door status
             if io.input(self.pin) and self.status == "Close":
                 if self.objLog:
-                    self.objLog.log('edoSwitch - Open', 'INFO')
+                    self.objLog.log('Switch - Open', 'INFO')
                 else:
-                    print('edoSwitch - Open')
+                    print('Switch - Open')
                 self.status = "Open"
                 epoch = int(time.time())
                 self.queue.put((epoch, self.status))
             elif not io.input(self.pin) and self.status == "Open":
                 if self.objLog:
-                    self.objLog.log('edoSwitch - Close', 'INFO')
+                    self.objLog.log('Switch - Close', 'INFO')
                 else:
-                    print('edoSwitch - Close')
+                    print('Switch - Close')
                 self.status = "Close"
                 epoch = int(time.time())
                 self.queue.put((epoch, self.status))
@@ -1133,7 +1133,7 @@ class Switch(threading.Thread):
 class DHT(threading.Thread):
     """
     Class object to read temp or humid from DHT_11 sensor
-    object = edoDHT_humid(pin=4, limit=1, check_int=10, type=0(humid)/1(temp), log_object)
+    object = DHT_humid(pin=4, limit=1, check_int=10, type=0(humid)/1(temp), log_object)
     """
 
     def __init__(self, logger_object=None, **kwargs):
@@ -1167,9 +1167,9 @@ class DHT(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoDHT - has to be run as root', 'CRITICAL')
+                self.objLog.log('DHT - has to be run as root', 'CRITICAL')
             else:
-                print('edoDHT - has to be run as root')
+                print('DHT - has to be run as root')
             return 1
 
         def changed(old, new, limit):
@@ -1292,8 +1292,8 @@ class McpValue(threading.Thread):
     # noinspection PyPep8
     """
         Class object to read MCP3008
-        object = edoMCPvalue(minref, adc_in, **kwargs)
-        object = edoMCPvalue(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, check_times=100, logger_object=logger_object)
+        object = MCPvalue(minref, adc_in, **kwargs)
+        object = MCPvalue(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, check_times=100, logger_object=logger_object)
         """
 
     def __init__(self, minref=510, adc_in=0, **kwargs):
@@ -1363,8 +1363,8 @@ class PowerMeter(McpValue):
     # noinspection PyPep8
     """
         Class object to Non-Intrusive Current Meter through MCP3008
-        object = edoPowerMeter(minref, adc_in, **kwargs)
-        object = edoPowerMeter(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, logger_object=logger_object)
+        object = PowerMeter(minref, adc_in, **kwargs)
+        object = PowerMeter(510, 0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, logger_object=logger_object)
         """
 
     def __init__(self, minref, adc_in, **kwargs):
@@ -1405,7 +1405,7 @@ class PowerMeter(McpValue):
             else:
                 return False
 
-        device_type = 'edoPowerMeter'
+        device_type = 'PowerMeter'
         if not os.geteuid() == 0:
             if self.objLog:
                 self.objLog.log('%s - has to be run as root' % device_type, 'CRITICAL')
@@ -1422,19 +1422,6 @@ class PowerMeter(McpValue):
         self.queue.put((epoch, self.avg_val))
 
         while self.running:
-            # noinspection PyPep8
-            '''
-                        # For Average
-                        current_power = self.poll_value(self.minref, self.adc_in, debug=self.debug, sleep_int=0.000001, max_retry=10)[0]
-                        if changed(self.avg_val, current_power, self.limit):
-                            self.avg_val = current_power
-                            if self.objLog:
-                                self.objLog.log('edoPowerMeter: ' + str(self.avg_val), 'INFO')
-                            else:
-                                print('edoPowerMeter: ' + str(self.avg_val))
-                            epoch = int(time.time())
-                            self.queue.put((epoch, self.avg_val))
-                        '''
             # For Max
             # noinspection PyPep8
             current_power = \
@@ -1450,9 +1437,9 @@ class PowerMeter(McpValue):
             if changed(self.max_val, current_power, self.limit) and all(verified):
                 self.max_val = current_power
                 if self.objLog:
-                    self.objLog.log('edoPowerMeter: ' + str(self.max_val), 'INFO')
+                    self.objLog.log('PowerMeter: ' + str(self.max_val), 'INFO')
                 else:
-                    print('edoPowerMeter: ' + str(self.max_val))
+                    print('PowerMeter: ' + str(self.max_val))
                 epoch = int(time.time())
                 self.queue.put((epoch, self.max_val))
 
@@ -1488,8 +1475,8 @@ class AdcMeter(McpValue):
     # noinspection PyPep8
     """
         Class object to Messure percantage through MCP3008
-        object = edoADCmeter(adc_in, **kwargs)
-        object = edoADCmeter(0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, pause_int=1, logger_object=logger_object)
+        object = ADCmeter(adc_in, **kwargs)
+        object = ADCmeter(0, clockpin=18, mosipin=24, misopin=23, cspin=25, check_int=1, sleep_int=0.000001, pause_int=1, logger_object=logger_object)
         """
 
     def __init__(self, adc_in=0, **kwargs):
@@ -1532,7 +1519,7 @@ class AdcMeter(McpValue):
             else:
                 return False
 
-        device_type = 'edoADCpercantage'
+        device_type = 'ADCpercantage'
         if not os.geteuid() == 0:
             if self.objLog:
                 self.objLog.log('%s - has to be run as root' % device_type, 'CRITICAL')
@@ -1554,9 +1541,9 @@ class AdcMeter(McpValue):
             if changed(self.avg_val, current_value, self.limit):
                 self.avg_val = current_value
                 if self.objLog:
-                    self.objLog.log('edoValueMeter: ' + str(self.avg_val), 'INFO')
+                    self.objLog.log('ValueMeter: ' + str(self.avg_val), 'INFO')
                 else:
-                    print('edoValueMeter: ' + str(self.avg_val))
+                    print('ValueMeter: ' + str(self.avg_val))
                 epoch = int(time.time())
                 self.queue.put((epoch, self.avg_val))
             # Pause the time
@@ -1613,7 +1600,7 @@ def get_local_ip():
 class Button(threading.Thread):
     """
     Class object to handle button
-    object = edoButton(3, {1: [function1,args], 2: [function2,args]}, pin=22, check_int=0.1, log_object)
+    object = Button(3, {1: [function1,args], 2: [function2,args]}, pin=22, check_int=0.1, log_object)
     """
 
     def __init__(self, timeout=1, functions=None, logger_object=None, **kwargs):
@@ -1648,9 +1635,9 @@ class Button(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoButton - has to be run as root', 'CRITICAL')
+                self.objLog.log('Button - has to be run as root', 'CRITICAL')
             else:
-                print('edoButton - has to be run as root')
+                print('Button - has to be run as root')
             return 1
 
         self.running = True
@@ -1689,7 +1676,7 @@ class Button(threading.Thread):
 class Led(threading.Thread):
     """
     Class object to blink led in background
-    object = edoLed(pin=25, check_int=0.1, log_object)
+    object = Led(pin=25, check_int=0.1, log_object)
     """
 
     def __init__(self, blink_type=None, logger_object=None, **kwargs):
@@ -1737,9 +1724,9 @@ class Led(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoLed - has to be run as root', 'CRITICAL')
+                self.objLog.log('Led - has to be run as root', 'CRITICAL')
             else:
-                print('edoLed - has to be run as root')
+                print('Led - has to be run as root')
             return 1
 
         self.running = True
@@ -1793,7 +1780,7 @@ class Led(threading.Thread):
 class Buzzer(threading.Thread):
     """
     Class object to make noise with piezo speaker
-    object = edoBuzzer(pin=27, check_int=0.1, log_object)
+    object = Buzzer(pin=27, check_int=0.1, log_object)
     """
 
     def __init__(self, buzz_type=None, logger_object=None, **kwargs):
@@ -1826,9 +1813,9 @@ class Buzzer(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoBuzzer - has to be run as root', 'CRITICAL')
+                self.objLog.log('Buzzer - has to be run as root', 'CRITICAL')
             else:
-                print('edoBuzzer - has to be run as root')
+                print('Buzzer - has to be run as root')
             return 1
 
         self.running = True
@@ -2319,7 +2306,7 @@ class Luxmeter:
 class LuxMeter(threading.Thread):
     """
     Class object to read lux from a TSL2561
-    object = edoLuxMeter(limit=1, check_int=10, log_object)
+    object = LuxMeter(limit=1, check_int=10, log_object)
     """
 
     def __init__(self, logger_object=None, **kwargs):
@@ -2346,9 +2333,9 @@ class LuxMeter(threading.Thread):
 
         if not os.geteuid() == 0:
             if self.objLog:
-                self.objLog.log('edoLux - has to be run as root', 'CRITICAL')
+                self.objLog.log('Lux - has to be run as root', 'CRITICAL')
             else:
-                print('edoLux - has to be run as root')
+                print('Lux - has to be run as root')
             return 1
 
         self.running = True
@@ -2408,8 +2395,8 @@ class LuxMeter(threading.Thread):
 class ModemDongle(threading.Thread):
     """
     Class object to handle 3G Dongle
-    object = edoModemDongle(log_object, tty='/dev/ttyUSB0')
-    object = edoModemDongle(incoming_cmd={'search_for_word_in_sms': 'function_or_external_script_with_rest_as_args'})
+    object = ModemDongle(log_object, tty='/dev/ttyUSB0')
+    object = ModemDongle(incoming_cmd={'search_for_word_in_sms': 'function_or_external_script_with_rest_as_args'})
     """
 
     # noinspection PyProtectedMember
