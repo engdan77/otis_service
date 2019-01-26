@@ -505,7 +505,7 @@ ex.
 
 ex.
 
-	def getEnabledSensors(logger_object, log_object=None):
+	def get_enabled_sensors(logger_object, log_object=None):
 	....
 	if logger_object.get('sensor_motionpir', 'enable') == 'true':
 	    pin = logger_object.get('sensor_motionpir', 'pin')
@@ -521,7 +521,7 @@ ex.
 
 	class triggerQueueHandler(threading.Thread):
 	...
-	print GetDateTime() + ": Handling trigger in queue " + str(trigger)
+	print get_date_time() + ": Handling trigger in queue " + str(trigger)
 	if attr_id == 1:
 	    # Motion Pir
 	    date = epoch_to_date(data[0])
