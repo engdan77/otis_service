@@ -674,8 +674,8 @@ Data Model
 Pictures
 -------------------------
 *Example of current status of sensors - based on edoWeb*
-![Sensors](https://github.com/engdan77/edoWeb/blob/master/pics/edoWeb_sensors.png)
-https://github.com/engdan77/edoWeb
+![Sensors](https://github.com/engdan77/otis_web/blob/master/pics/edoWeb_sensors.png)
+https://github.com/engdan77/otis_web
 
 *Picture of otis_serviceMobile App developed for reading sensors from your mobile device*
 ![mobile_app](https://github.com/engdan77/otis_service/blob/master/pics/otis_sensors.jpg)
