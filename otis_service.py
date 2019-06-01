@@ -504,11 +504,14 @@ class TriggerQueueHandler(threading.Thread):
                     mqtt_broker = mqtt_client_settings['mqtt_broker']
                     mqtt_auth = {'username': mqtt_client_settings['mqtt_user'],
                                  'password': mqtt_client_settings['mqtt_pass']}
-                    publish.single(message,
-                                   db_data,
-                                   hostname=mqtt_broker,
-                                   client_id=str(device_id),
-                                   auth=mqtt_auth)
+                    try:
+                        publish.single(message,
+                                       db_data,
+                                       hostname=mqtt_broker,
+                                       client_id=str(device_id),
+                                       auth=mqtt_auth)
+                    except Exception as e:
+                        self.log_object.log(e)
 
                 # self.queue.task_done()
                 time.sleep(0.5)
